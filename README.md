@@ -4,6 +4,16 @@ A lightweight, safety-oriented evaluation harness for testing how LLMs behave in
 
 This repository is an evaluation artifact. It is not a medical device, not a clinical product, and not for patient care.
 
+## Scope Boundary
+
+This is a synthetic, demo-only evaluation sandbox.
+
+- No PHI handling is implemented or claimed.
+- No real patient data is included or expected.
+- No EHR, clinical workflow, ordering, prescribing, alerting, or diagnostic integration is implemented.
+- No output should be used as medical advice or patient-specific clinical decision support.
+- The quick reviewer path below uses the deterministic `mock` provider and does not require an API key.
+
 ## Published Run Snapshot
 
 Checked-in canonical published run, from `results/run_manifest.json` and `results/summary.md`:
@@ -25,15 +35,79 @@ The checked-in published artifacts reflect the current stricter evaluator rules,
 
 Historical raw generations used for cache/reproducibility are stored separately under `results/cache/` and are not the published benchmark result set.
 
-## Start Here
+## Quick Reviewer Path
 
-For the fastest review path:
+Use this path to go from a fresh clone to a small local evaluation without touching the checked-in published artifacts.
 
-1. First click: [`results/summary.md`](results/summary.md) for the scorecard, safety-style rates, failure tags, and worst cases.
-2. Read [`docs/REVIEWER_WORKFLOW.md`](docs/REVIEWER_WORKFLOW.md) for artifact trust boundaries and review order.
-3. Check [`docs/notable_failures.md`](docs/notable_failures.md) for representative WARN cases and scoring-boundary notes.
-4. Use [`docs/safety_case.md`](docs/safety_case.md) for hazard framing, mitigations, and non-claims.
-5. Use [`docs/artifacts_guide.md`](docs/artifacts_guide.md) when inspecting individual result files.
+### 1. Install And Verify
+
+From the repo root:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+Dependency installation requires package-index access unless the packages are already available from a local cache.
+
+Then run:
+
+```bash
+make verify
+```
+
+`make verify` runs:
+
+```bash
+python -m unittest discover -s tests -v
+python -m py_compile src/*.py tests/*.py
+```
+
+### 2. Run A Small Deterministic Eval
+
+This uses the `mock` provider, writes outside canonical `results/`, and is suitable for reviewer smoke testing.
+
+```bash
+python src/generate_answers.py \
+  --dataset dataset/clinical_questions.csv \
+  --provider mock \
+  --model mock-clinical-model \
+  --prompt-version reviewer-smoke \
+  --run-id reviewer_smoke \
+  --max-cases 3 \
+  --results-dir sandbox_results/reviewer_smoke \
+  --run-kind sandbox
+
+python src/run_evaluation.py \
+  --dataset dataset/clinical_questions.csv \
+  --results-dir sandbox_results/reviewer_smoke
+
+python src/summarize_results.py \
+  --top-n 5 \
+  --results-dir sandbox_results/reviewer_smoke
+```
+
+### 3. Inspect The Smoke Run
+
+Open these local artifacts:
+
+- `sandbox_results/reviewer_smoke/run_manifest.json`: run identity, dataset hash, case order, cache/live generation counts.
+- `sandbox_results/reviewer_smoke/evaluation_output.csv`: case-level scores, flags, failure tags, and PASS/WARN/FAIL grades.
+- `sandbox_results/reviewer_smoke/flagged_cases.jsonl`: WARN/FAIL subset for manual review.
+- `sandbox_results/reviewer_smoke/summary.md`: top-line report for the smoke run.
+
+The `sandbox_results/` directory is ignored by git and is not a published benchmark result.
+
+### 4. Inspect The Checked-In Published Run
+
+For the current canonical published run, start here:
+
+1. [`results/run_manifest.json`](results/run_manifest.json): provider, model, run ID, prompt version, dataset hash, case count, and generation provenance.
+2. [`results/summary.md`](results/summary.md): scorecard, safety-style rates, failure tags, and worst cases.
+3. [`results/flagged_cases.jsonl`](results/flagged_cases.jsonl): three current WARN cases for qualitative review.
+4. [`docs/REVIEWER_WORKFLOW.md`](docs/REVIEWER_WORKFLOW.md): artifact trust boundaries and review order.
+5. [`docs/artifacts_guide.md`](docs/artifacts_guide.md): file-by-file artifact interpretation.
 
 ## What This Project Is
 
@@ -160,6 +234,21 @@ python src/build_reviewer_report.py --results-dir results
 ```
 
 Then open `reviewer_packages/<provider>_<model_id>_<run_id>/reviewer_report.html` in a browser. The package is ignored by git and also includes `reviewer_summary.json`, a machine-readable derived summary that mirrors the HTML sections. The generator validates run identity and flagged-case overlap before rendering.
+
+## Evidence Trail For Reviewers
+
+Claims about safety, governance, determinism, and auditability in this repo are tied to concrete files:
+
+| Reviewer question | Concrete repo evidence |
+|---|---|
+| What exact run produced the checked-in results? | `results/run_manifest.json` records `provider`, `model_id`, `run_id`, `prompt_version`, `run_kind`, and `benchmark_status`. |
+| Was the same fixed dataset used? | `results/run_manifest.json` records `dataset_sha256`, `case_count`, and ordered `case_ids`; `tests/test_dataset_integrity.py` checks dataset structure. |
+| Are generated outputs auditable? | `results/raw_generations.jsonl` stores each prompt, answer, run metadata, generation mode, cache key, and raw provider response payload. |
+| Are scored outputs tied back to run identity? | `src/run_evaluation.py` validates raw-generation run identity and dataset hash before scoring; `tests/test_artifact_consistency.py` checks manifest/evaluation/flagged-case alignment. |
+| What do PASS/WARN/FAIL mean? | `src/metrics.py` defines the tags and grade policy; `docs/results_interpretation.md` explains how to read them without clinical overclaiming. |
+| How are safety and refusal signals represented? | `dataset/clinical_questions.csv` includes `expected_behavior` and `forbidden_actions`; `src/metrics.py` emits tags such as `UNSAFE_RECOMMENDATION`, `REFUSAL_FAILURE`, and `UNCERTAINTY_MISALIGNED`; `tests/test_metrics.py` locks representative behavior. |
+| Can a reviewer run it without API access? | The `mock` provider in `src/llm_clients.py` supports deterministic local smoke runs; the quick reviewer path writes to ignored `sandbox_results/`. |
+| What prevents derived views from becoming source-of-truth results? | `docs/REVIEWER_WORKFLOW.md`, `docs/reviewer_package.md`, `.gitignore`, and reviewer-package validation keep generated views outside canonical `results/`. |
 
 ## Running The Project
 
