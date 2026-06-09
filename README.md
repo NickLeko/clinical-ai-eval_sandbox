@@ -14,26 +14,39 @@ This is a synthetic, demo-only evaluation sandbox.
 - No output should be used as medical advice or patient-specific clinical decision support.
 - The quick reviewer path below uses the deterministic `mock` provider and does not require an API key.
 
-## Published Run Snapshot
+## Cross-Model Evaluation Results
 
-Checked-in canonical published run, from `results/run_manifest.json` and `results/summary.md`:
+The table below is derived from cached full-dataset generations in `results/cache/raw_generations_cache.jsonl` re-scored with the current evaluator. These cached runs are comparison evidence, not a replacement for the checked-in canonical published artifacts.
+
+| Model | Cached cases | Source run IDs | PASS | WARN | FAIL | Unsafe rec. rate | Hallucination suspicion rate | Refusal failure rate | Mean format | Mean citation validity | Mean required citations | Mean uncertainty alignment | Mean key-point coverage | Mean faithfulness proxy | Non-PASS where `gpt-4o` PASS |
+|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `gpt-3.5-turbo` | 25 | `20260305_033255` | 17 | 7 | 1 | 0.0% | 0.0% | 4.0% | 1.000 | 1.000 | 1.000 | 0.758 | 0.500 | 0.899 | 7 |
+| `gpt-4.1-mini` | 25 | `20260305_025201, 20260305_030136` | 16 | 9 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 0.940 | 0.728 | 0.520 | 0.829 | 8 |
+| `gpt-4.1-nano` | 25 | `20260305_040708` | 14 | 11 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 1.000 | 0.656 | 0.580 | 0.899 | 9 |
+| `gpt-4o` | 25 | `20260305_045410` | 22 | 3 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 1.000 | 0.932 | 0.520 | 0.866 | 0 |
+
+The final column is discrimination evidence in the narrow benchmark sense: weaker cached models produced WARN or FAIL grades on cases where the cached `gpt-4o` answer passed under the same evaluator.
+
+## Published Run Identity
+
+Checked-in canonical published run identity, from `results/run_manifest.json` and `results/summary.md`:
 
 | Field | Current checked-in value |
 |---|---:|
 | Provider / model | `openai` / `gpt-4o` |
 | Run ID | `20260305_045410` |
+| Prompt version | `v1` |
 | Scored cases | `25 / 25` |
-| PASS / WARN / FAIL | `22 / 3 / 0` |
-| Unsafe recommendation rate | `0.0%` |
-| Hallucination suspicion rate | `0.0%` |
-| Refusal failure rate | `0.0%` |
-| Mean faithfulness proxy | `0.866` |
-| Mean uncertainty alignment | `0.932` |
+| Benchmark status | `canonical_published` |
 
-Guardrail: these are heuristic evaluator outputs for one explicit published run. They are not evidence of clinical safety or deployment readiness.
+Guardrail: these are heuristic evaluator outputs. They are not evidence of clinical safety or deployment readiness.
 The checked-in published artifacts reflect the current stricter evaluator rules, including non-empty section checks and rationale-scoped required citations.
 
 Historical raw generations used for cache/reproducibility are stored separately under `results/cache/` and are not the published benchmark result set.
+
+## Known Evaluator Limitations
+
+The evaluator intentionally remains heuristic and inspectable. Heuristic substring-matching safety checks and keyword-overlap faithfulness proxies cannot detect semantic inversion when an answer reuses context vocabulary while reversing the recommendation. See [`docs/notable_failures.md`](docs/notable_failures.md) for the documented NSAID/CKD semantic inversion probe and exact evaluator output.
 
 ## Quick Reviewer Path
 
