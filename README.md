@@ -1,12 +1,25 @@
-# Clinical AI Evaluation Sandbox
+# Clinical AI Eval Sandbox
 
-A lightweight, safety-oriented evaluation harness for testing how LLMs behave in controlled clinical decision-support scenarios.
+Before a healthcare organization deploys an LLM into clinical-adjacent workflows, someone has to answer: where does it fail, when does it overstate, and how do we know?
 
-This repository is an evaluation artifact. It is not a medical device, not a clinical product, and not for patient care.
+This project is a safety-oriented evaluation harness for clinical-adjacent LLM behavior. It tests groundedness, citation fidelity, uncertainty calibration, refusal behavior, and failure modes across structured synthetic clinical scenarios, with reviewer-facing reports and reproducible run artifacts.
+
+It is a self-directed evaluation prototype, not a clinical validation study or production safety system. The goal is to show how healthcare AI outputs can be reviewed, scored, and stress-tested before they touch real workflows.
+
+## What It Evaluates
+
+- Groundedness
+- Citation fidelity
+- Uncertainty calibration
+- Refusal behavior
+- Negation-sensitive safety failures
+- Reviewer-facing reporting
+- Run provenance and reproducibility
 
 ## Scope Boundary
 
 This is a synthetic, demo-only evaluation sandbox.
+It is not a medical device, not a clinical product, and not for patient care.
 
 - No PHI handling is implemented or claimed.
 - No real patient data is included or expected.
@@ -14,20 +27,9 @@ This is a synthetic, demo-only evaluation sandbox.
 - No output should be used as medical advice or patient-specific clinical decision support.
 - The quick reviewer path below uses the deterministic `mock` provider and does not require an API key.
 
-## Cross-Model Evaluation Results
+## Published Evaluation Snapshot — March 5, 2026
 
-The table below is derived from cached full-dataset generations in `results/cache/raw_generations_cache.jsonl` re-scored with the current evaluator. These cached runs are comparison evidence, not a replacement for the checked-in canonical published artifacts.
-
-| Model | Cached cases | Source run IDs | PASS | WARN | FAIL | Unsafe rec. rate | Hallucination suspicion rate | Refusal failure rate | Mean format | Mean citation validity | Mean required citations | Mean uncertainty alignment | Mean key-point coverage | Mean faithfulness proxy | Non-PASS where `gpt-4o` PASS |
-|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `gpt-3.5-turbo` | 25 | `20260305_033255` | 17 | 7 | 1 | 0.0% | 0.0% | 4.0% | 1.000 | 1.000 | 1.000 | 0.758 | 0.500 | 0.899 | 7 |
-| `gpt-4.1-mini` | 25 | `20260305_025201, 20260305_030136` | 16 | 9 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 0.940 | 0.728 | 0.520 | 0.829 | 8 |
-| `gpt-4.1-nano` | 25 | `20260305_040708` | 14 | 11 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 1.000 | 0.656 | 0.580 | 0.899 | 9 |
-| `gpt-4o` | 25 | `20260305_045410` | 22 | 3 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 1.000 | 0.932 | 0.520 | 0.866 | 0 |
-
-The final column is discrimination evidence in the narrow benchmark sense: weaker cached models produced WARN or FAIL grades on cases where the cached `gpt-4o` answer passed under the same evaluator.
-
-## Published Run Identity
+![Evaluation summary showing 22 PASS, 3 WARN, and 0 FAIL cases, plus mean faithfulness proxy, citation validity, and uncertainty alignment scores](docs/assets/published-evaluation-snapshot.svg)
 
 Checked-in canonical published run identity, from `results/run_manifest.json` and `results/summary.md`:
 
@@ -134,7 +136,7 @@ This project simulates a pre-deployment healthcare AI evaluation workflow:
 
 The goal is not to build a medical model. The goal is to build a credible evaluation sandbox that shows how a healthcare AI team might risk-test an LLM before workflow integration.
 
-## What It Evaluates
+## How Outputs Are Checked
 
 The benchmark uses structured clinical scenarios and checks whether a model:
 
@@ -167,6 +169,19 @@ Clinical AI evaluation cannot rely on accuracy alone. This sandbox focuses on si
 - reviewer-friendly failure analysis
 
 The repo is intentionally small, auditable, and governance-oriented rather than production-complete.
+
+## Historical Cross-Model Snapshot — March 5, 2026
+
+The table below is a dated, reproducible benchmark snapshot derived from cached full-dataset generations in `results/cache/raw_generations_cache.jsonl` and re-scored with the current evaluator. These cached runs are comparison evidence, not current model recommendations and not a replacement for the checked-in canonical published artifacts.
+
+| Model | Cached cases | Source run IDs | PASS | WARN | FAIL | Unsafe rec. rate | Hallucination suspicion rate | Refusal failure rate | Mean format | Mean citation validity | Mean required citations | Mean uncertainty alignment | Mean key-point coverage | Mean faithfulness proxy | Non-PASS where `gpt-4o` PASS |
+|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `gpt-3.5-turbo` | 25 | `20260305_033255` | 17 | 7 | 1 | 0.0% | 0.0% | 4.0% | 1.000 | 1.000 | 1.000 | 0.758 | 0.500 | 0.899 | 7 |
+| `gpt-4.1-mini` | 25 | `20260305_025201, 20260305_030136` | 16 | 9 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 0.940 | 0.728 | 0.520 | 0.829 | 8 |
+| `gpt-4.1-nano` | 25 | `20260305_040708` | 14 | 11 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 1.000 | 0.656 | 0.580 | 0.899 | 9 |
+| `gpt-4o` | 25 | `20260305_045410` | 22 | 3 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 1.000 | 0.932 | 0.520 | 0.866 | 0 |
+
+The final column is discrimination evidence in the narrow benchmark sense: weaker cached models produced WARN or FAIL grades on cases where the cached `gpt-4o` answer passed under the same evaluator.
 
 ## 2-Minute Repo Map
 
