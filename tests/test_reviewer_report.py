@@ -271,6 +271,13 @@ class ReviewerReportTests(unittest.TestCase):
                 self.assertEqual(len(artifact["sha256"]), 64)
                 self.assertTrue(artifact["relative_link_from_package"], artifact["filename"])
 
+            canonical_manifest = Path(__file__).resolve().parents[1] / "results" / "run_manifest.json"
+            with self.assertRaisesRegex(ValueError, "cannot overwrite canonical artifact"):
+                write_reviewer_package(
+                    results_dir=str(results_dir),
+                    html_output_path=str(canonical_manifest),
+                )
+
     def test_default_package_dir_is_outside_source_results_dir(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_path = Path(tmpdir)

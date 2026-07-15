@@ -57,6 +57,7 @@ jobs:
             --model "${{ inputs.model }}" \
             --prompt-version "${{ inputs.prompt_version }}" \
             --run-id "${{ inputs.run_id }}" \
+            --results-dir sandbox_results/published_candidate \
             --run-kind candidate
 
       - name: Replay benchmark candidate artifacts from cache
@@ -67,18 +68,19 @@ jobs:
             --model "${{ inputs.model }}" \
             --prompt-version "${{ inputs.prompt_version }}" \
             --run-id "${{ inputs.run_id }}" \
+            --results-dir sandbox_results/published_candidate \
             --run-kind candidate
-          python src/run_evaluation.py --dataset dataset/clinical_questions.csv
-          python src/summarize_results.py --top-n 10
+          python src/run_evaluation.py --dataset dataset/clinical_questions.csv --results-dir sandbox_results/published_candidate
+          python src/summarize_results.py --top-n 10 --results-dir sandbox_results/published_candidate
 
       - name: Snapshot candidate artifacts
         run: |
           mkdir -p /tmp/candidate_baseline
-          cp results/raw_generations.jsonl /tmp/candidate_baseline/raw_generations.jsonl
-          cp results/evaluation_output.csv /tmp/candidate_baseline/evaluation_output.csv
-          cp results/flagged_cases.jsonl /tmp/candidate_baseline/flagged_cases.jsonl
-          cp results/summary.md /tmp/candidate_baseline/summary.md
-          cp results/run_manifest.json /tmp/candidate_baseline/run_manifest.json
+          cp sandbox_results/published_candidate/raw_generations.jsonl /tmp/candidate_baseline/raw_generations.jsonl
+          cp sandbox_results/published_candidate/evaluation_output.csv /tmp/candidate_baseline/evaluation_output.csv
+          cp sandbox_results/published_candidate/flagged_cases.jsonl /tmp/candidate_baseline/flagged_cases.jsonl
+          cp sandbox_results/published_candidate/summary.md /tmp/candidate_baseline/summary.md
+          cp sandbox_results/published_candidate/run_manifest.json /tmp/candidate_baseline/run_manifest.json
 
       - name: Rebuild candidate artifacts from cache
         run: |
@@ -88,20 +90,21 @@ jobs:
             --model "${{ inputs.model }}" \
             --prompt-version "${{ inputs.prompt_version }}" \
             --run-id "${{ inputs.run_id }}" \
+            --results-dir sandbox_results/published_candidate \
             --run-kind candidate
-          python src/run_evaluation.py --dataset dataset/clinical_questions.csv
-          python src/summarize_results.py --top-n 10
+          python src/run_evaluation.py --dataset dataset/clinical_questions.csv --results-dir sandbox_results/published_candidate
+          python src/summarize_results.py --top-n 10 --results-dir sandbox_results/published_candidate
 
       - name: Assert candidate artifacts are reproducible
         run: |
-          diff -u /tmp/candidate_baseline/raw_generations.jsonl results/raw_generations.jsonl
-          diff -u /tmp/candidate_baseline/evaluation_output.csv results/evaluation_output.csv
-          diff -u /tmp/candidate_baseline/flagged_cases.jsonl results/flagged_cases.jsonl
-          diff -u /tmp/candidate_baseline/summary.md results/summary.md
-          diff -u /tmp/candidate_baseline/run_manifest.json results/run_manifest.json
+          diff -u /tmp/candidate_baseline/raw_generations.jsonl sandbox_results/published_candidate/raw_generations.jsonl
+          diff -u /tmp/candidate_baseline/evaluation_output.csv sandbox_results/published_candidate/evaluation_output.csv
+          diff -u /tmp/candidate_baseline/flagged_cases.jsonl sandbox_results/published_candidate/flagged_cases.jsonl
+          diff -u /tmp/candidate_baseline/summary.md sandbox_results/published_candidate/summary.md
+          diff -u /tmp/candidate_baseline/run_manifest.json sandbox_results/published_candidate/run_manifest.json
 
       - name: Upload published benchmark candidate
         uses: actions/upload-artifact@v4
         with:
           name: published-benchmark-candidate-${{ inputs.run_id }}
-          path: results/
+          path: sandbox_results/published_candidate/

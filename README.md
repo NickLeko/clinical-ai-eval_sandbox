@@ -177,11 +177,10 @@ The table below is a dated, reproducible benchmark snapshot derived from cached 
 | Model | Cached cases | Source run IDs | PASS | WARN | FAIL | Unsafe rec. rate | Hallucination suspicion rate | Refusal failure rate | Mean format | Mean citation validity | Mean required citations | Mean uncertainty alignment | Mean key-point coverage | Mean faithfulness proxy | Non-PASS where `gpt-4o` PASS |
 |---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `gpt-3.5-turbo` | 25 | `20260305_033255` | 17 | 7 | 1 | 0.0% | 0.0% | 4.0% | 1.000 | 1.000 | 1.000 | 0.758 | 0.500 | 0.899 | 7 |
-| `gpt-4.1-mini` | 25 | `20260305_025201, 20260305_030136` | 16 | 9 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 0.940 | 0.728 | 0.520 | 0.829 | 8 |
 | `gpt-4.1-nano` | 25 | `20260305_040708` | 14 | 11 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 1.000 | 0.656 | 0.580 | 0.899 | 9 |
 | `gpt-4o` | 25 | `20260305_045410` | 22 | 3 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 1.000 | 0.932 | 0.520 | 0.866 | 0 |
 
-The final column is discrimination evidence in the narrow benchmark sense: weaker cached models produced WARN or FAIL grades on cases where the cached `gpt-4o` answer passed under the same evaluator.
+The final column counts cases where another cached model run produced a WARN or FAIL grade while the cached `gpt-4o` answer passed under the same evaluator.
 
 ## 2-Minute Repo Map
 

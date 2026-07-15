@@ -21,6 +21,7 @@ from src.prompt_templates import build_clinical_prompt
 
 
 SUPPORTED_PROVIDERS = ("openai", "anthropic", "gemini", "mock")
+CANONICAL_RESULTS_DIR = (Path(__file__).resolve().parents[1] / "results").resolve()
 
 
 def utc_now_iso() -> str:
@@ -37,6 +38,24 @@ def sha256_file(path: str) -> str:
 
 def default_run_id() -> str:
     return datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+
+
+def resolve_results_dir(results_dir: Optional[str], run_kind: str, run_id: str) -> str:
+    if results_dir is not None:
+        return results_dir
+    if run_kind == "sandbox":
+        return str(Path("sandbox_results") / run_id)
+    return "results"
+
+
+def validate_results_dir_request(results_dir: str, run_kind: str, confirm_published: bool) -> None:
+    if Path(results_dir).resolve() != CANONICAL_RESULTS_DIR:
+        return
+
+    if run_kind in ("sandbox", "candidate"):
+        raise ValueError(f"{run_kind.capitalize()} runs cannot write to the canonical results/ directory.")
+    if run_kind == "published" and not confirm_published:
+        raise ValueError("Published writes to the canonical results/ directory require --confirm-published.")
 
 
 def classify_benchmark_status(run_kind: str, provider: str, is_full_dataset_run: bool) -> str:
@@ -255,10 +274,14 @@ def main(
     run_id: Optional[str],
     max_cases: Optional[int],
     sleep_s: float,
-    results_dir: str,
+    results_dir: Optional[str],
     run_kind: str = "sandbox",
+    confirm_published: bool = False,
 ) -> None:
     provider = normalize_provider_name(provider)
+    requested_run_id = run_id or default_run_id()
+    results_dir = resolve_results_dir(results_dir, run_kind, requested_run_id)
+    validate_results_dir_request(results_dir, run_kind, confirm_published)
     ensure_results_dirs(results_dir)
     paths = build_artifact_paths(results_dir)
 
@@ -286,7 +309,6 @@ def main(
     )
     is_full_dataset_run = selected_case_count == dataset_total_rows
 
-    requested_run_id = run_id or default_run_id()
     existing = load_existing_cache(paths.cache_raw_path)
 
     public_rows: List[Dict[str, Any]] = []
@@ -385,7 +407,11 @@ if __name__ == "__main__":
     parser.add_argument("--run-id", default=None, help="Explicit run identifier.")
     parser.add_argument("--max-cases", type=int, default=None, help="Max number of cases to run (cost control).")
     parser.add_argument("--sleep-s", type=float, default=0.0, help="Sleep between calls (rate-limit friendliness).")
-    parser.add_argument("--results-dir", default="results", help="Directory for public and cached artifacts.")
+    parser.add_argument(
+        "--results-dir",
+        default=None,
+        help="Directory for public and cached artifacts. Sandbox runs default to sandbox_results/<run_id>/.",
+    )
     parser.add_argument(
         "--run-kind",
         default="sandbox",
@@ -394,6 +420,11 @@ if __name__ == "__main__":
             "Run intent: sandbox for exploratory/non-canonical runs, candidate for full-dataset review artifacts, "
             "published for the checked-in canonical artifact set."
         ),
+    )
+    parser.add_argument(
+        "--confirm-published",
+        action="store_true",
+        help="Confirm an intentional published write to the canonical results/ directory.",
     )
     args = parser.parse_args()
 
@@ -407,4 +438,5 @@ if __name__ == "__main__":
         sleep_s=args.sleep_s,
         results_dir=args.results_dir,
         run_kind=args.run_kind,
+        confirm_published=args.confirm_published,
     )

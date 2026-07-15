@@ -29,6 +29,14 @@ REVIEWER_PACKAGE_SCHEMA_VERSION = "reviewer-package-v1"
 REVIEWER_REPORT_FILENAME = "reviewer_report.html"
 REVIEWER_SUMMARY_FILENAME = "reviewer_summary.json"
 REVIEWER_PACKAGES_DIRNAME = "reviewer_packages"
+CANONICAL_RESULTS_DIR = (Path(__file__).resolve().parents[1] / "results").resolve()
+CANONICAL_RESULT_FILENAMES = {
+    RUN_MANIFEST_FILENAME,
+    EVALUATION_OUTPUT_FILENAME,
+    FLAGGED_OUTPUT_FILENAME,
+    SUMMARY_OUTPUT_FILENAME,
+    PUBLIC_RAW_FILENAME,
+}
 DERIVED_NOTICE = (
     "Derived non-canonical reviewer package. This package is a convenience view built from completed-run "
     "artifacts. It does not rescore cases, change prompts, change datasets, change thresholds, or replace "
@@ -1387,11 +1395,23 @@ def default_package_dir(results_dir: str | Path, manifest: dict[str, Any]) -> Pa
     return results_path.parent / REVIEWER_PACKAGES_DIRNAME / identity
 
 
+def validate_custom_output_path(html_output_path: str) -> None:
+    output_path = Path(html_output_path).resolve()
+    canonical_paths = {
+        (CANONICAL_RESULTS_DIR / filename).resolve()
+        for filename in CANONICAL_RESULT_FILENAMES
+    }
+    if output_path in canonical_paths:
+        raise ValueError(f"Reviewer output cannot overwrite canonical artifact: {output_path}")
+
+
 def write_reviewer_package(
     results_dir: str = "results",
     output_dir: str | None = None,
     html_output_path: str | None = None,
 ) -> ReviewerPackagePaths:
+    if html_output_path:
+        validate_custom_output_path(html_output_path)
     data = load_report_data(results_dir)
     if html_output_path:
         html_path = Path(html_output_path)

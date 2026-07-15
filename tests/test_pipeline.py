@@ -7,18 +7,38 @@ from unittest.mock import patch
 
 import pandas as pd
 
-from src.generate_answers import classify_benchmark_status, main as generate_answers_main, select_client
+from src.generate_answers import (
+    classify_benchmark_status,
+    main as generate_answers_main,
+    resolve_results_dir,
+    select_client,
+    validate_results_dir_request,
+)
 from src.llm_clients import AnthropicClient, GeminiClient, MockClient, OpenAIClient
 from src.run_evaluation import main as run_evaluation_main
 from src.summarize_results import main as summarize_results_main
 
 
 class OfflinePipelineTests(unittest.TestCase):
-    def test_candidate_status_is_non_canonical(self) -> None:
+    def test_candidate_status_and_canonical_output_guards(self) -> None:
         self.assertEqual(classify_benchmark_status("candidate", "openai", True), "published_candidate")
         self.assertEqual(classify_benchmark_status("candidate", "anthropic", True), "published_candidate")
         self.assertEqual(classify_benchmark_status("candidate", "gemini", True), "published_candidate")
         self.assertEqual(classify_benchmark_status("published", "openai", True), "canonical_published")
+        self.assertEqual(
+            resolve_results_dir(None, "sandbox", "unit-sandbox"),
+            "sandbox_results/unit-sandbox",
+        )
+
+        canonical_results = str(Path(__file__).resolve().parents[1] / "results")
+        for run_kind in ("sandbox", "candidate"):
+            with self.subTest(run_kind=run_kind):
+                with self.assertRaisesRegex(ValueError, "cannot write to the canonical results"):
+                    validate_results_dir_request(canonical_results, run_kind, confirm_published=False)
+
+        with self.assertRaisesRegex(ValueError, "require --confirm-published"):
+            validate_results_dir_request(canonical_results, "published", confirm_published=False)
+        validate_results_dir_request(canonical_results, "published", confirm_published=True)
 
     def test_mock_pipeline_builds_artifacts_in_temp_results_dir(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

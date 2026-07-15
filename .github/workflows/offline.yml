@@ -48,7 +48,8 @@ jobs:
             --model "$PUBLISHED_MODEL" \
             --prompt-version "$PUBLISHED_PROMPT_VERSION" \
             --run-id "$PUBLISHED_RUN_ID" \
-            --run-kind published
+            --run-kind published \
+            --confirm-published
           python src/run_evaluation.py --dataset dataset/clinical_questions.csv
           python src/summarize_results.py --top-n 10
 
