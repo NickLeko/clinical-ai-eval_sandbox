@@ -17,12 +17,14 @@ if __package__ in (None, ""):
 
 from src.artifact_paths import (
     EVALUATION_OUTPUT_FILENAME,
+    EVALUATION_MANIFEST_FILENAME,
     FLAGGED_OUTPUT_FILENAME,
     PUBLIC_RAW_FILENAME,
     RUN_MANIFEST_FILENAME,
     SUMMARY_OUTPUT_FILENAME,
     build_artifact_paths,
 )
+from src.artifact_integrity import validate_scored_artifacts
 
 
 REVIEWER_PACKAGE_SCHEMA_VERSION = "reviewer-package-v1"
@@ -31,6 +33,7 @@ REVIEWER_SUMMARY_FILENAME = "reviewer_summary.json"
 REVIEWER_PACKAGES_DIRNAME = "reviewer_packages"
 CANONICAL_RESULTS_DIR = (Path(__file__).resolve().parents[1] / "results").resolve()
 CANONICAL_RESULT_FILENAMES = {
+    EVALUATION_MANIFEST_FILENAME,
     RUN_MANIFEST_FILENAME,
     EVALUATION_OUTPUT_FILENAME,
     FLAGGED_OUTPUT_FILENAME,
@@ -77,6 +80,7 @@ SCORE_FIELDS = [
     "faithfulness_proxy",
 ]
 FLAG_FIELDS = [
+    "incomplete_generation",
     "bogus_citations",
     "hallucination_suspected",
     "unsupported_specificity_suspected",
@@ -109,6 +113,7 @@ class ReviewerReportData:
     grade_counts: Counter[str]
     failure_tag_counts: Counter[str]
     source_artifacts: list[dict[str, Any]]
+    acceptance: dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -119,6 +124,11 @@ class ReviewerPackagePaths:
 
 
 SOURCE_ARTIFACT_SPECS = (
+    SourceArtifactSpec(
+        artifact_id="evaluation_manifest", filename=EVALUATION_MANIFEST_FILENAME,
+        path_attr="evaluation_manifest_path", role="Scored-input/output binding and blocking acceptance evidence.",
+        used_for=("staleness validation", "adversarial acceptance result"), parsed=True,
+    ),
     SourceArtifactSpec(
         artifact_id="run_manifest",
         filename=RUN_MANIFEST_FILENAME,
@@ -586,6 +596,7 @@ def load_report_data(results_dir: str = "results") -> ReviewerReportData:
 
     validate_evaluation_rows(manifest, evaluation_rows)
     flagged_cases = build_flagged_cases(evaluation_rows, flagged_rows)
+    receipt = validate_scored_artifacts(results_dir, require_summary=True)
     all_cases = build_all_cases(evaluation_rows, flagged_cases)
 
     grade_counts: Counter[str] = Counter(row.get("overall_grade", "") or "(blank)" for row in evaluation_rows)
@@ -602,6 +613,7 @@ def load_report_data(results_dir: str = "results") -> ReviewerReportData:
         grade_counts=grade_counts,
         failure_tag_counts=failure_tag_counts,
         source_artifacts=build_source_artifacts(results_path),
+        acceptance=receipt["acceptance"],
     )
 
 
@@ -755,8 +767,10 @@ def build_reviewer_summary(data: ReviewerReportData, package_dir: Path) -> dict[
             "checks": [
                 "Required completed-run source artifacts are present.",
                 "evaluation_output.csv run identity matches run_manifest.json.",
+                "Scored inputs, output files, evaluator code, acceptance evidence and summary match evaluation_manifest.json.",
+                "Raw answer text and completion status agree with the provider payload.",
                 "evaluation_output.csv case order/content matches run_manifest.json when manifest case_ids are present.",
-                "flagged_cases.jsonl case IDs are a subset of evaluation_output.csv.",
+                "flagged_cases.jsonl contains the complete WARN/FAIL subset of evaluation_output.csv.",
                 "flagged_cases.jsonl overlap fields match evaluation_output.csv.",
                 "flagged_cases.jsonl contains only WARN/FAIL rows.",
             ],
@@ -768,6 +782,7 @@ def build_reviewer_summary(data: ReviewerReportData, package_dir: Path) -> dict[
         "source_artifacts": enrich_source_artifacts_for_package(data.source_artifacts, package_dir),
         "run_identity": run_identity,
         "headline_results": {
+            "adversarial_acceptance": data.acceptance,
             "total_cases": total_cases,
             "flagged_cases": flagged_count,
             "pass": data.grade_counts.get("PASS", 0),
@@ -870,7 +885,9 @@ def render_headline_cards(summary: dict[str, Any]) -> str:
     ]
     return '<div class="stats">' + "".join(
         f"<div class=\"stat\"><span>{esc(label)}</span><strong>{esc(value)}</strong></div>" for label, value in cards
-    ) + "</div>"
+    ) + ("</div><p>Blocking adversarial acceptance: PASS ("
+         + esc(headline["adversarial_acceptance"]["tests_run"])
+         + " tests; no skips or expected failures). Literal-action contract only; not a clinical safety measurement.</p>")
 
 
 def render_grade_distribution(summary: dict[str, Any]) -> str:

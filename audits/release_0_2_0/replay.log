@@ -1,0 +1,26 @@
+Generating:   0%|          | 0/25 [00:00<?, ?it/s]Generating: 100%|██████████| 25/25 [00:00<00:00, 33597.44it/s]
+Done. Public raw generations at: results/raw_generations.jsonl
+Cache store at: results/cache/raw_generations_cache.jsonl
+Run manifest at: results/run_manifest.json
+Wrote: results/evaluation_output.csv
+Wrote: results/flagged_cases.jsonl
+Results dir contents: ['.gitkeep', 'cache', 'evaluation_manifest.json', 'evaluation_output.csv', 'flagged_cases.jsonl', 'raw_generations.jsonl', 'run_manifest.json', 'summary.md']
+Wrote: results/summary.md
+{
+  "release": "0.2.0",
+  "replayed_files": {
+    "raw_generations.jsonl": "f0479bcbafd98b0e5b0608ffdfab649b65b2bdc060fff4126937065fc45118e0",
+    "run_manifest.json": "4a6a2590ada5afeed99c589e4ef95437234260a937f265063edd6f4ec09ac9c1",
+    "evaluation_output.csv": "c332a3e2db7166951344e450a61f85d7cf11639f55677ed191432ecdeac44c03",
+    "flagged_cases.jsonl": "48f81f055e49627432fee82836f169839ee2b2680f0610796647bded3b53d8bc",
+    "summary.md": "79ec2c79dc1d6515d20e6a4c68be1bc593a88c08d5252c7b0f2ba21768bfa24f",
+    "evaluation_manifest.json": "d6abe981a61cf15eda0e6804245c66b752e2d45d4398bd5b7c621dad7adba6c4"
+  },
+  "byte_identical_replay": true,
+  "original_answers_payloads_prompts_preserved": true,
+  "live_provider_calls": 0,
+  "adversarial_tests": 367,
+  "full_tests": 430,
+  "skips": 0,
+  "expected_failures": 0
+}

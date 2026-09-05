@@ -1,12 +1,12 @@
 {
-  "run_id": "release_0_2_0",
+  "run_id": "20260305_045410",
   "provider": "openai",
   "model_id": "gpt-4o",
   "prompt_version": "v1",
   "run_kind": "published",
   "benchmark_status": "canonical_published",
   "dataset_path": "dataset/clinical_questions.csv",
-  "dataset_sha256": "e323ba2e03ebbe5e81cdc01364647a76b0967c9770ed491c0358f9d8fceede1f",
+  "dataset_sha256": "5ccade9ff647e0b99b71d380ad38cb151d37a927c4e9b06f418eb3cab0c175ef",
   "dataset_total_rows": 25,
   "is_full_dataset_run": true,
   "results_dir": "results",
@@ -43,7 +43,7 @@
   "cache_hits": 25,
   "live_generations": 0,
   "generation_modes": {
-    "cache_reuse": 25
+    "exact_run_reuse": 25
   },
   "source_run_ids": [
     "20260305_045410"

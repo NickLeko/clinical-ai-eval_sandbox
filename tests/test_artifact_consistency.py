@@ -2,6 +2,7 @@ import csv
 import json
 import re
 import unittest
+from src.artifact_integrity import validate_scored_artifacts
 from pathlib import Path
 
 
@@ -35,6 +36,9 @@ def load_flagged_rows() -> list[dict]:
 
 
 class PublishedArtifactConsistencyTests(unittest.TestCase):
+    def test_published_receipt_binds_current_code_inputs_outputs_and_summary(self) -> None:
+        receipt = validate_scored_artifacts(RESULTS_DIR, require_summary=True)
+        self.assertEqual(receipt["acceptance"]["status"], "PASS")
     def test_published_artifact_files_exist_and_are_readable(self) -> None:
         for path in (
             RUN_MANIFEST_PATH,

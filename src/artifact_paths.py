@@ -9,6 +9,7 @@ RUN_MANIFEST_FILENAME = "run_manifest.json"
 EVALUATION_OUTPUT_FILENAME = "evaluation_output.csv"
 FLAGGED_OUTPUT_FILENAME = "flagged_cases.jsonl"
 SUMMARY_OUTPUT_FILENAME = "summary.md"
+EVALUATION_MANIFEST_FILENAME = "evaluation_manifest.json"
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,7 @@ class ArtifactPaths:
     evaluation_output_path: Path
     flagged_output_path: Path
     summary_output_path: Path
+    evaluation_manifest_path: Path
 
 
 def build_artifact_paths(results_dir: str = "results") -> ArtifactPaths:
@@ -36,4 +38,5 @@ def build_artifact_paths(results_dir: str = "results") -> ArtifactPaths:
         evaluation_output_path=results_root / EVALUATION_OUTPUT_FILENAME,
         flagged_output_path=results_root / FLAGGED_OUTPUT_FILENAME,
         summary_output_path=results_root / SUMMARY_OUTPUT_FILENAME,
+        evaluation_manifest_path=results_root / EVALUATION_MANIFEST_FILENAME,
     )

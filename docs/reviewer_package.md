@@ -1,5 +1,15 @@
 # Reviewer Package
 
+> v0.2.0 integrity boundary: `evaluation_manifest.json` is required. It binds the
+> scored raw text, run manifest, evaluation CSV, complete flagged subset, evaluator
+> code, and executed blocking acceptance result; summary adds its own hash.
+> Summary/reviewer commands reject stale or unscored files and require the readable
+> dataset named in the manifest. Re-run evaluation and then summary after changes.
+> Legacy artifacts require an explicit re-score; the historical audit bundle is
+> preserved under `audits/adversarial_2026_09_04/baseline/`.
+> This is a consistency receipt, not a signed attestation or clinical safety evidence.
+
+
 The reviewer package is a derived, non-canonical convenience layer for inspecting one completed evaluation run.
 
 It is designed to make human review faster without changing benchmark semantics. It reads completed-run artifacts, validates run identity and flagged-case overlap, then writes a local HTML report and machine-readable JSON summary.

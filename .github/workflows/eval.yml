@@ -35,6 +35,11 @@ jobs:
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       PYTHONPATH: "."
+      INPUT_MODEL: ${{ inputs.model }}
+      INPUT_PROMPT_VERSION: ${{ inputs.prompt_version }}
+      INPUT_RUN_ID: ${{ inputs.run_id }}
+      INPUT_PROVIDER: ${{ inputs.provider }}
+      INPUT_MAX_CASES: ${{ inputs.max_cases }}
 
     steps:
       - name: Checkout
@@ -54,6 +59,9 @@ jobs:
       - name: Compile Python sources
         run: python -m py_compile src/*.py tests/*.py
 
+      - name: Blocking adversarial acceptance
+        run: make acceptance
+
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
 
@@ -61,11 +69,11 @@ jobs:
         run: |
           python src/generate_answers.py \
             --dataset dataset/clinical_questions.csv \
-            --provider "${{ inputs.provider }}" \
-            --model "${{ inputs.model }}" \
-            --prompt-version "${{ inputs.prompt_version }}" \
-            --run-id "${{ inputs.run_id }}" \
-            --max-cases "${{ inputs.max_cases }}" \
+            --provider "$INPUT_PROVIDER" \
+            --model "$INPUT_MODEL" \
+            --prompt-version "$INPUT_PROMPT_VERSION" \
+            --run-id "$INPUT_RUN_ID" \
+            --max-cases "$INPUT_MAX_CASES" \
             --results-dir sandbox_results \
             --run-kind sandbox
 

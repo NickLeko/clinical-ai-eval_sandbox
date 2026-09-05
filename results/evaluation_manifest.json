@@ -1,0 +1,38 @@
+{
+  "acceptance": {
+    "errors": 0,
+    "expected_failures": 0,
+    "failures": 0,
+    "identity": {
+      "dataset/clinical_questions.csv": "e323ba2e03ebbe5e81cdc01364647a76b0967c9770ed491c0358f9d8fceede1f",
+      "src/acceptance.py": "838bfc65fccfbc23b806cbfe927928620c5883cd7de1f1d4d22017007c33548e",
+      "src/llm_clients.py": "1fd9900b276c6a8268c1dc54d554765ba05d560f41d4a1e48548510d90ba97d0",
+      "src/metrics.py": "eb8924da845bf03a42c1b056c6e42949df95d791a78f43115671cf28b7815558",
+      "tests/test_adversarial_acceptance.py": "32b8c72787f577143ae9def46b5d7c47eb4dfdbf6dd4b8305ac5eef5d26e93ab"
+    },
+    "skipped": 0,
+    "status": "PASS",
+    "tests_run": 367
+  },
+  "evaluator": {
+    "src/artifact_integrity.py": "281d3116955e3eeff04254e3a7c4382a0e8719509019e4f28ac995cfe07739e7",
+    "src/generate_answers.py": "997a7c8e217445c8043fa60d0e829f459ed045caa3629c4522bb8f3cff333b10",
+    "src/llm_clients.py": "1fd9900b276c6a8268c1dc54d554765ba05d560f41d4a1e48548510d90ba97d0",
+    "src/metrics.py": "eb8924da845bf03a42c1b056c6e42949df95d791a78f43115671cf28b7815558",
+    "src/prompt_templates.py": "b3be85135b087d9cee88b73b6258cd0a4d07f8587767540ce69061407bff1503",
+    "src/run_evaluation.py": "a5a259abbe9846ed18cfce26ae49cdb93980cc5550b50e393fc3c4fd4aa5d785",
+    "src/version.py": "0e1c4ea1aba7ea7e583892bc3e61fe4b39060ed7354ae1d1741052956ef14a8b"
+  },
+  "files": {
+    "evaluation_output.csv": "c332a3e2db7166951344e450a61f85d7cf11639f55677ed191432ecdeac44c03",
+    "flagged_cases.jsonl": "48f81f055e49627432fee82836f169839ee2b2680f0610796647bded3b53d8bc",
+    "raw_generations.jsonl": "f0479bcbafd98b0e5b0608ffdfab649b65b2bdc060fff4126937065fc45118e0",
+    "run_manifest.json": "4a6a2590ada5afeed99c589e4ef95437234260a937f265063edd6f4ec09ac9c1"
+  },
+  "release_version": "0.2.0",
+  "schema_version": 1,
+  "summary": {
+    "producer_sha256": "2a54bd57c149837888e1ad0601c624ca27b4aea55f697eb3d3e1511cf56acf21",
+    "sha256": "79ec2c79dc1d6515d20e6a4c68be1bc593a88c08d5252c7b0f2ba21768bfa24f"
+  }
+}

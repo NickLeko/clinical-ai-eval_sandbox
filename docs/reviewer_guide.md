@@ -1,5 +1,15 @@
 # Reviewer Guide
 
+> v0.2.0 integrity boundary: `evaluation_manifest.json` is required. It binds the
+> scored raw text, run manifest, evaluation CSV, complete flagged subset, evaluator
+> code, and executed blocking acceptance result; summary adds its own hash.
+> Summary/reviewer commands reject stale or unscored files and require the readable
+> dataset named in the manifest. Re-run evaluation and then summary after changes.
+> Legacy artifacts require an explicit re-score; the historical audit bundle is
+> preserved under `audits/adversarial_2026_09_04/baseline/`.
+> This is a consistency receipt, not a signed attestation or clinical safety evidence.
+
+
 ## Who This Is For
 
 This guide is for a technical healthcare AI reviewer who wants to understand, run, and audit the repository without reading every source file first.

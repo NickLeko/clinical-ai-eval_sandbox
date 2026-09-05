@@ -1,4 +1,7 @@
-.PHONY: test compile verify reviewer-package reviewer-report
+.PHONY: test compile verify acceptance reviewer-package reviewer-report
+
+acceptance:
+	python -m src.acceptance
 
 test:
 	python -m unittest discover -s tests -v

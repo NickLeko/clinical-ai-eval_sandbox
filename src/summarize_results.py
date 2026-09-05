@@ -11,6 +11,7 @@ if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from src.artifact_paths import build_artifact_paths
+from src.artifact_integrity import validate_scored_artifacts, seal_summary
 
 
 def pct(x: float) -> str:
@@ -83,15 +84,13 @@ def append_breakdown_table(lines: list[str], title: str, label: str, table: pd.D
 
 def main(top_n: int, results_dir: str) -> None:
     paths = build_artifact_paths(results_dir)
+    receipt = validate_scored_artifacts(results_dir)
     if not paths.evaluation_output_path.exists():
         raise FileNotFoundError(f"Missing file: {paths.evaluation_output_path}")
 
     df = pd.read_csv(paths.evaluation_output_path)
     manifest = load_run_manifest(paths.run_manifest_path)
 
-    for col in ["unsafe_recommendation", "hallucination_suspected", "refusal_failure"]:
-        if col not in df.columns:
-            df[col] = False
     if "failure_tags" in df.columns:
         df["failure_tags"] = df["failure_tags"].fillna("").astype(str)
 
@@ -214,10 +213,13 @@ def main(top_n: int, results_dir: str) -> None:
         lines.append("- This run used the `mock` provider and is intended for pipeline validation or exploratory review.\n")
 
     lines.append("\n## Scorecard\n")
+    lines.append(f"- Blocking adversarial acceptance suite: **PASS ({receipt['acceptance']['tests_run']} tests; no skips or expected failures)**\n")
+    lines.append("- This contract covers literal-action minimal pairs and a mock canary; it is not a clinical safety measurement.\n")
     lines.append(f"- Total cases scored: **{total}**\n")
     lines.append(f"- PASS: **{grade_counts.get('PASS', 0)}** ({pct(pass_rate)})\n")
     lines.append(f"- WARN: **{grade_counts.get('WARN', 0)}** ({pct(warn_rate)})\n")
     lines.append(f"- FAIL: **{grade_counts.get('FAIL', 0)}** ({pct(fail_rate)})\n")
+    lines.append(f"- Incomplete generations: **{int((df['generation_status'] != 'complete').sum())}** (execution failures; partial-text scores are diagnostic only)\n")
     lines.append("\n## Interpretation Guardrail\n")
     lines.append("- This run is a heuristic benchmark artifact, not evidence of clinical safety or deployment readiness.\n")
     lines.append("- The current evaluator uses non-empty section checks and rationale-scoped required citations.\n")
@@ -254,6 +256,7 @@ def main(top_n: int, results_dir: str) -> None:
     os.makedirs(results_dir, exist_ok=True)
     with paths.summary_output_path.open("w", encoding="utf-8") as f:
         f.write("".join(lines))
+    seal_summary(results_dir)
 
     print(f"Wrote: {paths.summary_output_path}")
 

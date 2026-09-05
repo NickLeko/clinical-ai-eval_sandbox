@@ -130,6 +130,7 @@ class OpenAIClient(BaseLLMClient):
         return {
             "answer_text": answer_text,
             "raw_response": data,
+            **completion_metadata("openai", data),
         }
 
 
@@ -197,6 +198,7 @@ class AnthropicClient(BaseLLMClient):
         return {
             "answer_text": answer_text,
             "raw_response": data,
+            **completion_metadata("anthropic", data),
         }
 
 
@@ -271,6 +273,7 @@ class GeminiClient(BaseLLMClient):
         return {
             "answer_text": answer_text,
             "raw_response": data,
+            **completion_metadata("gemini", data),
         }
 
 
@@ -301,4 +304,53 @@ Do-not-do:
         return {
             "answer_text": dummy_answer.strip(),
             "raw_response": {"mock": True},
+            "generation_status": "complete",
+            "finish_reason": "mock",
         }
+
+
+def completion_metadata(provider: str, data: Dict[str, Any]) -> Dict[str, str]:
+    """Normalize terminal status; unknown termination is never presumed complete."""
+    try:
+        if provider == "openai":
+            reason = data["choices"][0].get("finish_reason")
+            complete = reason == "stop"
+        elif provider == "anthropic":
+            reason = data.get("stop_reason")
+            complete = reason in {"end_turn", "stop_sequence"}
+        elif provider == "gemini":
+            reason = data["candidates"][0].get("finishReason")
+            complete = reason == "STOP"
+        elif provider == "mock" and data == {"mock": True}:
+            reason, complete = "mock", True
+        else:
+            raise ValueError(f"Unsupported provider or mock payload: {provider}")
+    except (KeyError, IndexError, TypeError) as exc:
+        raise ValueError(f"Malformed {provider} completion payload") from exc
+    return {"generation_status": "complete" if complete else "incomplete",
+            "finish_reason": str(reason or "unknown")}
+
+
+def validate_generation_payload(row: Dict[str, Any]) -> Dict[str, str]:
+    """Bind cached/scored text and normalized status to the retained response payload."""
+    provider = row.get("provider", "")
+    data = row.get("raw_response")
+    if not isinstance(data, dict):
+        raise ValueError("Missing or malformed raw_response")
+    metadata = completion_metadata(provider, data)
+    if provider == "mock":
+        text = MockClient().generate("")["answer_text"]
+    else:
+        cls = {"openai": OpenAIClient, "anthropic": AnthropicClient, "gemini": GeminiClient}[provider]
+        client = cls.__new__(cls)  # Pure extraction; never initialize credentials or perform I/O.
+        client.model = str(row.get("model_id", "unknown"))
+        try:
+            text = client._extract_answer_text(data)
+        except LLMGenerationError as exc:
+            raise ValueError(f"Invalid raw_response for {row.get('case_id')}: {exc}") from exc
+    if not isinstance(row.get("answer_text"), str) or row["answer_text"] != text:
+        raise ValueError(f"answer_text contradicts raw_response for {row.get('case_id')}")
+    for key, value in metadata.items():
+        if key in row and row[key] != value:
+            raise ValueError(f"{key} contradicts raw_response for {row.get('case_id')}")
+    return metadata

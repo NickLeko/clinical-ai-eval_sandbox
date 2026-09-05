@@ -89,7 +89,8 @@ class OfflinePipelineTests(unittest.TestCase):
             self.assertEqual(len(evaluation), 2)
             self.assertTrue((evaluation["run_id"] == "unit-test-run").all())
             self.assertIn("gold_key_points_coverage", evaluation.columns)
-            self.assertEqual(evaluation["overall_grade"].tolist(), ["PASS", "PASS"])
+            self.assertEqual(evaluation["overall_grade"].tolist(), ["PASS", "WARN"])
+            self.assertIn("ANSWER_WITHHELD", evaluation.iloc[1]["failure_tags"])
             self.assertEqual(evaluation["gold_key_points_coverage"].tolist(), [0.0, 0.0])
 
             summary = (results_dir / "summary.md").read_text(encoding="utf-8")

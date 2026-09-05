@@ -2,15 +2,15 @@
 
 Before a healthcare organization deploys an LLM into clinical-adjacent workflows, someone has to answer: where does it fail, when does it overstate, and how do we know?
 
-This project is a safety-oriented evaluation harness for clinical-adjacent LLM behavior. It tests groundedness, citation fidelity, uncertainty calibration, refusal behavior, and failure modes across structured synthetic clinical scenarios, with reviewer-facing reports and reproducible run artifacts.
+Version **0.2.0** is a heuristic evaluation harness for 25 synthetic clinical scenarios. It checks literal forbidden actions, context-anchor membership, selected limitation phrases, and response structure. Lexical overlap is an observational proxy, not a verification of groundedness or clinical correctness.
 
 It is a self-directed evaluation prototype, not a clinical validation study or production safety system. The goal is to show how healthcare AI outputs can be reviewed, scored, and stress-tested before they touch real workflows.
 
 ## What It Evaluates
 
-- Groundedness
-- Citation fidelity
-- Uncertainty calibration
+- Lexical overlap with supplied context
+- Context-anchor membership and required-anchor coverage
+- Selected uncertainty/limitation phrases
 - Refusal behavior
 - Negation-sensitive safety failures
 - Reviewer-facing reporting
@@ -27,28 +27,25 @@ It is not a medical device, not a clinical product, and not for patient care.
 - No output should be used as medical advice or patient-specific clinical decision support.
 - The quick reviewer path below uses the deterministic `mock` provider and does not require an API key.
 
-## Published Evaluation Snapshot — March 5, 2026
+## Release Contract — v0.2.0
 
-![Evaluation summary showing 22 PASS, 3 WARN, and 0 FAIL cases, plus mean faithfulness proxy, citation validity, and uncertainty alignment scores](docs/assets/published-evaluation-snapshot.svg)
+**Blocking adversarial acceptance: 367 tests passed; zero skips or expected failures.**
+Run `make acceptance` to execute the contract, or `make verify` for the full suite.
+Every configured forbidden phrase is covered by unsafe and safe minimal pairs; future literal-action bypasses belong in [`tests/test_adversarial_acceptance.py`](tests/test_adversarial_acceptance.py).
 
-Checked-in canonical published run identity, from `results/run_manifest.json` and `results/summary.md`:
+The prior **22 PASS / 3 WARN / 0 FAIL headline is retired**. It was a gate property, not a safety measurement: zero failures meant these stored strings triggered none of three hard-failure tags. The audit's constant mock response achieved the same headline while missing most key points. Read the [audit](audits/adversarial_2026_09_04/REPORT.md) and [release notes](docs/releases/0.2.0.md).
 
-| Field | Current checked-in value |
-|---|---:|
-| Provider / model | `openai` / `gpt-4o` |
-| Run ID | `20260305_045410` |
-| Prompt version | `v1` |
-| Scored cases | `25 / 25` |
-| Benchmark status | `canonical_published` |
+The current canonical artifact set is an offline re-score of the same March 5 cached OpenAI answers, under revised literal gates and artifact checks. It is not a new model execution or comparable clinical safety measurement. Its scorecard is paired with executed acceptance evidence in [`results/summary.md`](results/summary.md) and [`results/evaluation_manifest.json`](results/evaluation_manifest.json). The old dataset and scorecard are preserved under `audits/adversarial_2026_09_04/baseline/`.
 
-Guardrail: these are heuristic evaluator outputs. They are not evidence of clinical safety or deployment readiness.
-The checked-in published artifacts reflect the current stricter evaluator rules, including non-empty section checks and rationale-scoped required citations.
+## Detection Boundaries
 
-Historical raw generations used for cache/reproducibility are stored separately under `results/cache/` and are not the published benchmark result set.
+Negation uses a limited clause heuristic with direct prohibitions and explicit postposed/quoted rejections. It is **not semantically correct negation handling**. Semantic inversion, paraphrase, and inflected forbidden actions remain undetected. Indirect prohibitions can still cause false positives; the current `DX_04` FAIL is one such example, not evidence of model harm.
 
-## Known Evaluator Limitations
+Citation validity means anchor membership, not whether the anchor supports the claim. External citation fabrication, wrong attribution, partially supported synthesis, and some uncited bullets remain open. Uncertainty scores are phrase matches, not probability calibration. Key-point coverage remains observational; the mock canary specifically prevents withholding required answers from silently passing.
 
-The evaluator intentionally remains heuristic and inspectable. Heuristic substring-matching safety checks and keyword-overlap faithfulness proxies cannot detect semantic inversion when an answer reuses context vocabulary while reversing the recommendation. See [`docs/notable_failures.md`](docs/notable_failures.md) for the documented NSAID/CKD semantic inversion probe and exact evaluator output.
+There is **no separate multi-evaluator disagreement resolution or adjudication implementation**. One deterministic evaluator emits tags; hard-failure tags survive aggregation.
+
+Under the prior audit, fabricated `[CTX999]` anchors FAILed in all 25 cases, bare forbidden phrases FAILed in all 21 configured cases, run/provider/model mismatches and dataset-hash changes were rejected, and hard-failure tags survived aggregation. These controls held; they did not establish clinical safety.
 
 ## Quick Reviewer Path
 
@@ -120,7 +117,7 @@ For the current canonical published run, start here:
 
 1. [`results/run_manifest.json`](results/run_manifest.json): provider, model, run ID, prompt version, dataset hash, case count, and generation provenance.
 2. [`results/summary.md`](results/summary.md): scorecard, safety-style rates, failure tags, and worst cases.
-3. [`results/flagged_cases.jsonl`](results/flagged_cases.jsonl): three current WARN cases for qualitative review.
+3. [`results/flagged_cases.jsonl`](results/flagged_cases.jsonl): the current WARN/FAIL subset for qualitative review; also sample PASS answers.
 4. [`docs/REVIEWER_WORKFLOW.md`](docs/REVIEWER_WORKFLOW.md): artifact trust boundaries and review order.
 5. [`docs/artifacts_guide.md`](docs/artifacts_guide.md): file-by-file artifact interpretation.
 
@@ -138,13 +135,7 @@ The goal is not to build a medical model. The goal is to build a credible evalua
 
 ## How Outputs Are Checked
 
-The benchmark uses structured clinical scenarios and checks whether a model:
-
-- answers from the provided context instead of inventing facts
-- cites the allowed context anchors
-- expresses uncertainty or refuses when evidence is insufficient
-- avoids forbidden or unsafe actions
-- follows a response format that is easy to inspect and score
+The benchmark checks configured literal phrases, anchor membership, selected limitation/action phrases, and nonempty sections. Unsupported treatment action markers in refusal/uncertain cases cannot be canceled by adding a disclaimer. Withheld answers in answer-expected cases emit `ANSWER_WITHHELD`. Incomplete provider completions emit `INCOMPLETE_GENERATION` and FAIL; partial-text metric values are diagnostic only.
 
 ## What It Does Not Claim
 
@@ -170,17 +161,9 @@ Clinical AI evaluation cannot rely on accuracy alone. This sandbox focuses on si
 
 The repo is intentionally small, auditable, and governance-oriented rather than production-complete.
 
-## Historical Cross-Model Snapshot — March 5, 2026
+## Historical Cross-Model Comparisons
 
-The table below is a dated, reproducible benchmark snapshot derived from cached full-dataset generations in `results/cache/raw_generations_cache.jsonl` and re-scored with the current evaluator. These cached runs are comparison evidence, not current model recommendations and not a replacement for the checked-in canonical published artifacts.
-
-| Model | Cached cases | Source run IDs | PASS | WARN | FAIL | Unsafe rec. rate | Hallucination suspicion rate | Refusal failure rate | Mean format | Mean citation validity | Mean required citations | Mean uncertainty alignment | Mean key-point coverage | Mean faithfulness proxy | Non-PASS where `gpt-4o` PASS |
-|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `gpt-3.5-turbo` | 25 | `20260305_033255` | 17 | 7 | 1 | 0.0% | 0.0% | 4.0% | 1.000 | 1.000 | 1.000 | 0.758 | 0.500 | 0.899 | 7 |
-| `gpt-4.1-nano` | 25 | `20260305_040708` | 14 | 11 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 1.000 | 0.656 | 0.580 | 0.899 | 9 |
-| `gpt-4o` | 25 | `20260305_045410` | 22 | 3 | 0 | 0.0% | 0.0% | 0.0% | 1.000 | 1.000 | 1.000 | 0.932 | 0.520 | 0.866 | 0 |
-
-The final column counts cases where another cached model run produced a WARN or FAIL grade while the cached `gpt-4o` answer passed under the same evaluator.
+The earlier cross-model score table is retired because it used the audited gates. Cache history remains inspectable in `results/cache/raw_generations_cache.jsonl`; do not present those scores as current model rankings. Comparisons require the same evaluator, dataset, provider completion status, and a passing adversarial contract.
 
 ## 2-Minute Repo Map
 
@@ -243,7 +226,8 @@ The main review artifacts are:
 - `results/run_manifest.json`: the explicit provider / model / run_id backing the public artifacts
 - `results/evaluation_output.csv`: case-level metrics, flags, and PASS/WARN/FAIL grades
 - `results/flagged_cases.jsonl`: subset for manual inspection of concerning outputs
-- `results/summary.md`: compact benchmark report with rates, means, and worst cases
+- `results/summary.md`: heuristic scorecard paired with the blocking acceptance result
+- `results/evaluation_manifest.json`: hashes binding scored inputs, evaluator code, outputs, summary, and acceptance evidence
 - `results/cache/raw_generations_cache.jsonl`: reusable raw-generation cache/history store that is not itself the public benchmark set
 
 The reviewer package is a generated convenience view, not a canonical benchmark artifact. It is derived from completed-run artifacts without changing scoring, prompts, datasets, thresholds, tags, metrics definitions, or published artifact meaning.
@@ -260,7 +244,7 @@ Equivalent direct command:
 python src/build_reviewer_report.py --results-dir results
 ```
 
-Then open `reviewer_packages/<provider>_<model_id>_<run_id>/reviewer_report.html` in a browser. The package is ignored by git and also includes `reviewer_summary.json`, a machine-readable derived summary that mirrors the HTML sections. The generator validates run identity and flagged-case overlap before rendering.
+Then open `reviewer_packages/<provider>_<model_id>_<run_id>/reviewer_report.html` in a browser. The package is ignored by git and also includes `reviewer_summary.json`, a machine-readable derived summary that mirrors the HTML sections. The generator rejects stale, unscored, or mixed artifacts before rendering. Both summary and reviewer commands require a current evaluation receipt and the readable dataset named in the manifest. Hash receipts detect inconsistencies; they are not signed protection against a writer who controls the entire bundle.
 
 ## Evidence Trail For Reviewers
 
@@ -283,7 +267,7 @@ This repo separates offline verification, exploratory sandbox runs, and publishe
 
 ### Offline verification
 
-The `Offline Verification` workflow compiles the repo, runs the unit tests, regenerates the published run from `results/cache/raw_generations_cache.jsonl`, and checks that the public artifacts reproduce exactly.
+The `Offline Verification` workflow runs the blocking adversarial contract, compiles the repo, runs the full suite, regenerates the published re-score from cache, and checks exact reproduction including `evaluation_manifest.json`. Inconsistent cached text/provider payloads are rejected before reuse.
 
 ### Quick local verification
 
@@ -370,7 +354,7 @@ The multi-provider support above exists at the generation-script layer. The chec
 - `docs/reviewer_package.md`: derived reviewer package usage, source dependencies, and boundaries
 - `docs/results_interpretation.md`: how to interpret benchmark outputs and model comparisons responsibly
 - `docs/safety_case.md`: safety framing, hazards, and mitigations
-- `docs/failure_modes.md`: common failure categories plus known v1 limitations
+- `docs/failure_modes.md`: failure tags and remaining detection gaps
 - `docs/notable_failures.md`: representative flagged cases
 - `docs/reviewer_guide.md`: quick walkthrough for interviewers and other reviewers
 - `docs/CODEX_RUNBOOK.md`: repo-local operating workflow for future Codex sessions

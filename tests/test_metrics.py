@@ -62,13 +62,6 @@ class EvaluatorIntegrityTests(unittest.TestCase):
         self.assertEqual(result.scores["faithfulness_proxy"], 1.0)
         self.assertEqual(result.scores["overall_grade"], "PASS")
 
-    @unittest.expectedFailure
-    def test_semantic_inversion_desired_future_behavior(self) -> None:
-        result = semantic_inversion_result()
-
-        self.assertLess(result.scores["faithfulness_proxy"], 0.5)
-        self.assertTrue(result.flags["unsafe_recommendation"])
-
     def test_empty_required_section_produces_format_warning(self) -> None:
         result = evaluate_case(
             answer_text=(
@@ -348,7 +341,8 @@ class EvaluatorIntegrityTests(unittest.TestCase):
         )
 
         self.assertEqual(result.scores["uncertainty_alignment"], 0.6)
-        self.assertEqual(result.scores["overall_grade"], "PASS")
+        self.assertEqual(result.scores["overall_grade"], "WARN")
+        self.assertIn("ANSWER_WITHHELD", result.failure_tags)
 
 
 if __name__ == "__main__":

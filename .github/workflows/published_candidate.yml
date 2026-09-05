@@ -27,6 +27,9 @@ jobs:
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       PYTHONPATH: "."
+      INPUT_MODEL: ${{ inputs.model }}
+      INPUT_PROMPT_VERSION: ${{ inputs.prompt_version }}
+      INPUT_RUN_ID: ${{ inputs.run_id }}
 
     steps:
       - name: Checkout
@@ -46,6 +49,9 @@ jobs:
       - name: Compile Python sources
         run: python -m py_compile src/*.py tests/*.py
 
+      - name: Blocking adversarial acceptance
+        run: make acceptance
+
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
 
@@ -54,9 +60,9 @@ jobs:
           python src/generate_answers.py \
             --dataset dataset/clinical_questions.csv \
             --provider openai \
-            --model "${{ inputs.model }}" \
-            --prompt-version "${{ inputs.prompt_version }}" \
-            --run-id "${{ inputs.run_id }}" \
+            --model "$INPUT_MODEL" \
+            --prompt-version "$INPUT_PROMPT_VERSION" \
+            --run-id "$INPUT_RUN_ID" \
             --results-dir sandbox_results/published_candidate \
             --run-kind candidate
 
@@ -65,9 +71,9 @@ jobs:
           python src/generate_answers.py \
             --dataset dataset/clinical_questions.csv \
             --provider openai \
-            --model "${{ inputs.model }}" \
-            --prompt-version "${{ inputs.prompt_version }}" \
-            --run-id "${{ inputs.run_id }}" \
+            --model "$INPUT_MODEL" \
+            --prompt-version "$INPUT_PROMPT_VERSION" \
+            --run-id "$INPUT_RUN_ID" \
             --results-dir sandbox_results/published_candidate \
             --run-kind candidate
           python src/run_evaluation.py --dataset dataset/clinical_questions.csv --results-dir sandbox_results/published_candidate
@@ -81,15 +87,16 @@ jobs:
           cp sandbox_results/published_candidate/flagged_cases.jsonl /tmp/candidate_baseline/flagged_cases.jsonl
           cp sandbox_results/published_candidate/summary.md /tmp/candidate_baseline/summary.md
           cp sandbox_results/published_candidate/run_manifest.json /tmp/candidate_baseline/run_manifest.json
+          cp sandbox_results/published_candidate/evaluation_manifest.json /tmp/candidate_baseline/evaluation_manifest.json
 
       - name: Rebuild candidate artifacts from cache
         run: |
           python src/generate_answers.py \
             --dataset dataset/clinical_questions.csv \
             --provider openai \
-            --model "${{ inputs.model }}" \
-            --prompt-version "${{ inputs.prompt_version }}" \
-            --run-id "${{ inputs.run_id }}" \
+            --model "$INPUT_MODEL" \
+            --prompt-version "$INPUT_PROMPT_VERSION" \
+            --run-id "$INPUT_RUN_ID" \
             --results-dir sandbox_results/published_candidate \
             --run-kind candidate
           python src/run_evaluation.py --dataset dataset/clinical_questions.csv --results-dir sandbox_results/published_candidate
@@ -102,6 +109,7 @@ jobs:
           diff -u /tmp/candidate_baseline/flagged_cases.jsonl sandbox_results/published_candidate/flagged_cases.jsonl
           diff -u /tmp/candidate_baseline/summary.md sandbox_results/published_candidate/summary.md
           diff -u /tmp/candidate_baseline/run_manifest.json sandbox_results/published_candidate/run_manifest.json
+          diff -u /tmp/candidate_baseline/evaluation_manifest.json sandbox_results/published_candidate/evaluation_manifest.json
 
       - name: Upload published benchmark candidate
         uses: actions/upload-artifact@v4

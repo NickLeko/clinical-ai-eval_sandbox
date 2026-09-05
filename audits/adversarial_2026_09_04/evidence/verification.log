@@ -1,0 +1,69 @@
+python -m unittest discover -s tests -v
+test_case_ids_match_manifest_and_flagged_subset (test_artifact_consistency.PublishedArtifactConsistencyTests.test_case_ids_match_manifest_and_flagged_subset) ... ok
+test_evaluation_output_exposes_reviewer_metric_and_flag_columns (test_artifact_consistency.PublishedArtifactConsistencyTests.test_evaluation_output_exposes_reviewer_metric_and_flag_columns) ... ok
+test_flagged_rows_match_evaluation_rows_where_fields_overlap (test_artifact_consistency.PublishedArtifactConsistencyTests.test_flagged_rows_match_evaluation_rows_where_fields_overlap) ... ok
+test_manifest_preserves_auditable_published_run_metadata (test_artifact_consistency.PublishedArtifactConsistencyTests.test_manifest_preserves_auditable_published_run_metadata) ... ok
+test_published_artifact_files_exist_and_are_readable (test_artifact_consistency.PublishedArtifactConsistencyTests.test_published_artifact_files_exist_and_are_readable) ... ok
+test_run_identity_matches_between_manifest_and_evaluation_output (test_artifact_consistency.PublishedArtifactConsistencyTests.test_run_identity_matches_between_manifest_and_evaluation_output) ... ok
+test_summary_preserves_interpretation_and_scope_guardrails (test_artifact_consistency.PublishedArtifactConsistencyTests.test_summary_preserves_interpretation_and_scope_guardrails) ... ok
+test_case_ids_are_unique (test_dataset_integrity.CheckedInDatasetIntegrityTests.test_case_ids_are_unique) ... ok
+test_expected_behavior_values_are_allowed (test_dataset_integrity.CheckedInDatasetIntegrityTests.test_expected_behavior_values_are_allowed) ... ok
+test_required_benchmark_fields_are_non_empty (test_dataset_integrity.CheckedInDatasetIntegrityTests.test_required_benchmark_fields_are_non_empty) ... ok
+test_required_citation_anchors_exist_in_provided_context (test_dataset_integrity.CheckedInDatasetIntegrityTests.test_required_citation_anchors_exist_in_provided_context) ... ok
+test_citation_validity_uses_context_anchors (test_metrics.CitationIntegrityTests.test_citation_validity_uses_context_anchors) ... ok
+test_answer_case_generic_uncertainty_language_does_not_reduce_alignment (test_metrics.EvaluatorIntegrityTests.test_answer_case_generic_uncertainty_language_does_not_reduce_alignment) ... ok
+test_answer_case_insufficiency_language_still_reduces_alignment (test_metrics.EvaluatorIntegrityTests.test_answer_case_insufficiency_language_still_reduces_alignment) ... ok
+test_empty_required_section_produces_format_warning (test_metrics.EvaluatorIntegrityTests.test_empty_required_section_produces_format_warning) ... ok
+test_generic_escalation_language_does_not_trigger_unsupported_specificity_warn (test_metrics.EvaluatorIntegrityTests.test_generic_escalation_language_does_not_trigger_unsupported_specificity_warn) ... ok
+test_missing_required_citations_produces_named_warn_reason (test_metrics.EvaluatorIntegrityTests.test_missing_required_citations_produces_named_warn_reason) ... ok
+test_negated_confidence_phrase_does_not_trigger_refusal_failure (test_metrics.EvaluatorIntegrityTests.test_negated_confidence_phrase_does_not_trigger_refusal_failure) ... ok
+test_negated_forbidden_action_is_not_flagged_unsafe (test_metrics.EvaluatorIntegrityTests.test_negated_forbidden_action_is_not_flagged_unsafe) ... ok
+test_refuse_case_with_action_confidence_trigger_produces_refusal_failure (test_metrics.EvaluatorIntegrityTests.test_refuse_case_with_action_confidence_trigger_produces_refusal_failure) ... ok
+test_refuse_case_with_denied_uncertainty_produces_warn (test_metrics.EvaluatorIntegrityTests.test_refuse_case_with_denied_uncertainty_produces_warn) ... ok
+test_required_citations_must_appear_in_rationale_bullets (test_metrics.EvaluatorIntegrityTests.test_required_citations_must_appear_in_rationale_bullets) ... ok
+test_semantic_inversion_current_limitation_is_documented (test_metrics.EvaluatorIntegrityTests.test_semantic_inversion_current_limitation_is_documented) ... ok
+test_semantic_inversion_desired_future_behavior (test_metrics.EvaluatorIntegrityTests.test_semantic_inversion_desired_future_behavior) ... expected failure
+test_sparse_context_added_specificity_produces_warn (test_metrics.EvaluatorIntegrityTests.test_sparse_context_added_specificity_produces_warn) ... ok
+test_unsupported_citation_maps_to_fail (test_metrics.EvaluatorIntegrityTests.test_unsupported_citation_maps_to_fail) ... ok
+test_blank_and_nan_values_become_empty_lists (test_metrics.NormalizePipeListTests.test_blank_and_nan_values_become_empty_lists) ... ok
+test_candidate_run_rejects_partial_dataset (test_pipeline.OfflinePipelineTests.test_candidate_run_rejects_partial_dataset) ... ok
+test_candidate_status_and_canonical_output_guards (test_pipeline.OfflinePipelineTests.test_candidate_status_and_canonical_output_guards) ... ok
+test_mock_pipeline_builds_artifacts_in_temp_results_dir (test_pipeline.OfflinePipelineTests.test_mock_pipeline_builds_artifacts_in_temp_results_dir) ... Generating:   0%|          | 0/2 [00:00<?, ?it/s]Generating: 100%|██████████| 2/2 [00:00<00:00, 5236.33it/s]
+ok
+test_published_run_rejects_mock_provider (test_pipeline.OfflinePipelineTests.test_published_run_rejects_mock_provider) ... ok
+test_published_run_rejects_partial_dataset (test_pipeline.OfflinePipelineTests.test_published_run_rejects_partial_dataset) ... ok
+test_run_evaluation_rejects_manifest_case_id_mismatch (test_pipeline.OfflinePipelineTests.test_run_evaluation_rejects_manifest_case_id_mismatch) ... Done. Public raw generations at: /var/folders/7r/2jvcn09d5kn8mv6007ycz0j00000gn/T/tmph_xugie5/results/raw_generations.jsonl
+Cache store at: /var/folders/7r/2jvcn09d5kn8mv6007ycz0j00000gn/T/tmph_xugie5/results/cache/raw_generations_cache.jsonl
+Run manifest at: /var/folders/7r/2jvcn09d5kn8mv6007ycz0j00000gn/T/tmph_xugie5/results/run_manifest.json
+Wrote: /var/folders/7r/2jvcn09d5kn8mv6007ycz0j00000gn/T/tmph_xugie5/results/evaluation_output.csv
+Wrote: /var/folders/7r/2jvcn09d5kn8mv6007ycz0j00000gn/T/tmph_xugie5/results/flagged_cases.jsonl
+Results dir contents: ['cache', 'evaluation_output.csv', 'flagged_cases.jsonl', 'raw_generations.jsonl', 'run_manifest.json']
+Wrote: /var/folders/7r/2jvcn09d5kn8mv6007ycz0j00000gn/T/tmph_xugie5/results/summary.md
+Generating:   0%|          | 0/2 [00:00<?, ?it/s]Generating: 100%|██████████| 2/2 [00:00<00:00, 26715.31it/s]
+ok
+test_select_client_rejects_unknown_provider (test_pipeline.OfflinePipelineTests.test_select_client_rejects_unknown_provider) ... ok
+test_select_client_supports_all_configured_providers (test_pipeline.OfflinePipelineTests.test_select_client_supports_all_configured_providers) ... ok
+test_generated_reviewer_paths_are_git_ignored (test_reviewer_docs.ReviewerDocumentationTests.test_generated_reviewer_paths_are_git_ignored) ... ok
+test_readme_preserves_scope_boundary_and_quick_path (test_reviewer_docs.ReviewerDocumentationTests.test_readme_preserves_scope_boundary_and_quick_path) ... ok
+test_readme_ties_trust_claims_to_concrete_evidence (test_reviewer_docs.ReviewerDocumentationTests.test_readme_ties_trust_claims_to_concrete_evidence) ... ok
+test_reviewer_guide_keeps_clone_to_inspect_workflow (test_reviewer_docs.ReviewerDocumentationTests.test_reviewer_guide_keeps_clone_to_inspect_workflow) ... ok
+test_custom_output_dir_source_links_are_relative_to_package (test_reviewer_report.ReviewerReportTests.test_custom_output_dir_source_links_are_relative_to_package) ... ok
+test_default_package_dir_is_outside_source_results_dir (test_reviewer_report.ReviewerReportTests.test_default_package_dir_is_outside_source_results_dir) ... ok
+test_load_report_data_parses_artifacts_and_counts_review_fields (test_reviewer_report.ReviewerReportTests.test_load_report_data_parses_artifacts_and_counts_review_fields) ... ok
+test_load_report_data_rejects_flagged_overlap_mismatch (test_reviewer_report.ReviewerReportTests.test_load_report_data_rejects_flagged_overlap_mismatch) ... ok
+test_report_generation_fails_on_malformed_flagged_jsonl (test_reviewer_report.ReviewerReportTests.test_report_generation_fails_on_malformed_flagged_jsonl) ... ok
+test_report_generation_fails_when_completed_run_source_artifact_is_missing (test_reviewer_report.ReviewerReportTests.test_report_generation_fails_when_completed_run_source_artifact_is_missing) ... ok
+test_report_generation_fails_when_evaluation_required_column_is_missing (test_reviewer_report.ReviewerReportTests.test_report_generation_fails_when_evaluation_required_column_is_missing) ... ok
+test_report_generation_fails_when_raw_generations_are_missing (test_reviewer_report.ReviewerReportTests.test_report_generation_fails_when_raw_generations_are_missing) ... ok
+test_report_generation_writes_self_contained_package_smoke (test_reviewer_report.ReviewerReportTests.test_report_generation_writes_self_contained_package_smoke) ... ok
+test_supporting_metric_display_label_is_not_grade_driving (test_reviewer_report.ReviewerReportTests.test_supporting_metric_display_label_is_not_grade_driving) ... ok
+test_zero_flagged_cases_still_renders_valid_package (test_reviewer_report.ReviewerReportTests.test_zero_flagged_cases_still_renders_valid_package) ... ok
+
+----------------------------------------------------------------------
+Ran 50 tests in 0.043s
+
+OK (expected failures=1)
+Done. Public raw generations at: /var/folders/7r/2jvcn09d5kn8mv6007ycz0j00000gn/T/tmp9om97smt/results/raw_generations.jsonl
+Cache store at: /var/folders/7r/2jvcn09d5kn8mv6007ycz0j00000gn/T/tmp9om97smt/results/cache/raw_generations_cache.jsonl
+Run manifest at: /var/folders/7r/2jvcn09d5kn8mv6007ycz0j00000gn/T/tmp9om97smt/results/run_manifest.json
+python -m py_compile src/*.py tests/*.py

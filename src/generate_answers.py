@@ -16,7 +16,7 @@ if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from src.artifact_paths import build_artifact_paths
-from src.llm_clients import AnthropicClient, GeminiClient, MockClient, OpenAIClient
+from src.llm_clients import AnthropicClient, GeminiClient, MockClient, OpenAIClient, validate_generation_payload
 from src.prompt_templates import build_clinical_prompt
 
 
@@ -169,6 +169,7 @@ def build_public_row_from_cache(
 ) -> Dict[str, Any]:
     source_run_id = str(cached_row.get("run_id", ""))
     generation_mode = "exact_run_reuse" if source_run_id == run_id else "cache_reuse"
+    completion = validate_generation_payload(cached_row)
 
     return {
         "run_id": run_id,
@@ -185,6 +186,7 @@ def build_public_row_from_cache(
         "latency_ms": cached_row.get("latency_ms", 0),
         "generation_mode": generation_mode,
         "raw_response": cached_row.get("raw_response", {}),
+        **completion,
     }
 
 
@@ -201,7 +203,7 @@ def build_live_row(
     latency_ms: int,
 ) -> Dict[str, Any]:
     timestamp_utc = utc_now_iso()
-    return {
+    row = {
         "run_id": run_id,
         "timestamp_utc": timestamp_utc,
         "source_run_id": run_id,
@@ -217,6 +219,8 @@ def build_live_row(
         "generation_mode": "live_generation",
         "raw_response": response.get("raw_response", {}),
     }
+    row.update(validate_generation_payload(row))
+    return row
 
 
 def build_run_manifest(

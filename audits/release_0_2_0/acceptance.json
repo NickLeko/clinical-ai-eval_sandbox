@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "tests_run": 367,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "expected_failures": 0,
+  "identity": {
+    "dataset/clinical_questions.csv": "e323ba2e03ebbe5e81cdc01364647a76b0967c9770ed491c0358f9d8fceede1f",
+    "tests/test_adversarial_acceptance.py": "32b8c72787f577143ae9def46b5d7c47eb4dfdbf6dd4b8305ac5eef5d26e93ab",
+    "src/metrics.py": "eb8924da845bf03a42c1b056c6e42949df95d791a78f43115671cf28b7815558",
+    "src/acceptance.py": "838bfc65fccfbc23b806cbfe927928620c5883cd7de1f1d4d22017007c33548e",
+    "src/llm_clients.py": "1fd9900b276c6a8268c1dc54d554765ba05d560f41d4a1e48548510d90ba97d0"
+  }
+}

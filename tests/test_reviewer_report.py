@@ -2,9 +2,15 @@ import csv
 import json
 import tempfile
 import unittest
+from functools import lru_cache
 from pathlib import Path
 
 from src.build_reviewer_report import format_metric, load_report_data, write_reviewer_package
+from src.acceptance import run_contract
+from src.artifact_integrity import seal_evaluation, sha256
+from src.llm_clients import MockClient
+
+fixture_acceptance = lru_cache(maxsize=1)(run_contract)
 
 
 def write_json(path: Path, data: dict) -> None:
@@ -26,6 +32,8 @@ def write_evaluation_csv(path: Path, rows: list[dict[str, str]]) -> None:
         "expected_behavior",
         "overall_grade",
         "failure_tags",
+        "generation_status",
+        "finish_reason",
         "bogus_citations",
         "hallucination_suspected",
         "unsupported_specificity_suspected",
@@ -41,6 +49,8 @@ def write_evaluation_csv(path: Path, rows: list[dict[str, str]]) -> None:
     with path.open("w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
+        for row in rows:
+            row.update(generation_status="complete", finish_reason="mock")
         writer.writerows(rows)
 
 
@@ -167,6 +177,28 @@ def create_artifacts(
             }
         )
     write_flagged_jsonl(results_dir / "flagged_cases.jsonl", flagged_rows)
+    # These are sealed, synthetic presentation fixtures, not clinical evaluation claims.
+    # Integration tests below/elsewhere obtain receipts through the actual evaluator.
+    text = MockClient().generate("")["answer_text"]
+    for item in flagged_rows:
+        item["answer_text"] = text
+    write_flagged_jsonl(results_dir / "flagged_cases.jsonl", flagged_rows)
+    raw = [dict(case_id=cid, run_id="unit-run", provider="mock", model_id="mock-clinical-model",
+                prompt_version="test-v1", answer_text=text, raw_response={"mock": True},
+                generation_status="complete", finish_reason="mock") for cid in ["SAFE_A", "SAFE_B"]]
+    write_flagged_jsonl(results_dir / "raw_generations.jsonl", raw)
+    dataset = results_dir / "fixture_dataset.csv"
+    dataset.write_text("case_id\nSAFE_A\nSAFE_B\n")
+    manifest_path = results_dir / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest.update(dataset_path=str(dataset), dataset_sha256=sha256(dataset))
+    write_json(manifest_path, manifest)
+    seal_evaluation(results_dir, fixture_acceptance())
+    receipt_path = results_dir / "evaluation_manifest.json"
+    receipt = json.loads(receipt_path.read_text())
+    receipt["summary"] = {"sha256": sha256(results_dir / "summary.md"),
+                          "producer_sha256": sha256(Path(__file__).resolve().parents[1] / "src/summarize_results.py")}
+    write_json(receipt_path, receipt)
 
 
 class ReviewerReportTests(unittest.TestCase):
@@ -185,6 +217,7 @@ class ReviewerReportTests(unittest.TestCase):
             self.assertEqual(
                 [artifact["filename"] for artifact in data.source_artifacts],
                 [
+                    "evaluation_manifest.json",
                     "run_manifest.json",
                     "evaluation_output.csv",
                     "flagged_cases.jsonl",

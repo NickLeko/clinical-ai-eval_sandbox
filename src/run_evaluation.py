@@ -13,6 +13,11 @@ if __package__ in (None, ""):
 
 from src.artifact_paths import build_artifact_paths
 from src.metrics import evaluate_case, normalize_pipe_list
+from src.acceptance import run_contract
+from src.artifact_integrity import seal_evaluation
+from src.generate_answers import build_cache_key
+from src.llm_clients import validate_generation_payload
+from src.prompt_templates import build_clinical_prompt
 
 
 def sha256_file(path: str) -> str:
@@ -52,6 +57,8 @@ def validate_public_run(rows: List[Dict[str, Any]], manifest: Dict[str, Any]) ->
     expected_run_id = str(manifest["run_id"])
     expected_provider = str(manifest["provider"])
     expected_model_id = str(manifest["model_id"])
+    if not manifest.get("case_ids") or "case_count" not in manifest:
+        raise ValueError("Run manifest is missing case coverage")
 
     seen_case_ids = set()
     row_case_ids: List[str] = []
@@ -62,6 +69,14 @@ def validate_public_run(rows: List[Dict[str, Any]], manifest: Dict[str, Any]) ->
             raise ValueError(f"Unexpected provider in public raw generations: {row.get('provider')}")
         if str(row.get("model_id", "")) != expected_model_id:
             raise ValueError(f"Unexpected model_id in public raw generations: {row.get('model_id')}")
+        if row.get("prompt_version") != manifest.get("prompt_version"):
+            raise ValueError("Unexpected prompt_version in public raw generations")
+        if row.get("generation_mode") not in {"live_generation", "cache_reuse", "exact_run_reuse"}:
+            raise ValueError("Unknown generation_mode")
+        if not row.get("source_run_id") or not row.get("timestamp_utc"):
+            raise ValueError("Missing source generation provenance")
+        if row.get("generation_mode") in {"live_generation", "exact_run_reuse"} and row["source_run_id"] != expected_run_id:
+            raise ValueError("source_run_id inconsistent with generation_mode")
 
         case_id = str(row.get("case_id", ""))
         if not case_id:
@@ -88,7 +103,7 @@ def validate_public_run(rows: List[Dict[str, Any]], manifest: Dict[str, Any]) ->
 def validate_dataset_against_manifest(dataset_path: str, manifest: Dict[str, Any]) -> None:
     expected_sha = str(manifest.get("dataset_sha256", "")).strip()
     if not expected_sha:
-        return
+        raise ValueError("Run manifest is missing dataset_sha256")
 
     actual_sha = sha256_file(dataset_path)
     if actual_sha != expected_sha:
@@ -108,14 +123,23 @@ def main(dataset_path: str, results_dir: str) -> None:
     for c in required_cols:
         if c not in df_cases.columns:
             raise ValueError(f"Dataset missing required column: {c}")
+    if df_cases.empty or df_cases["case_id"].isna().any() or df_cases["case_id"].duplicated().any():
+        raise ValueError("Dataset must contain unique, nonempty cases")
+    if not df_cases["expected_behavior"].isin(["answer", "refuse", "uncertain"]).all():
+        raise ValueError("Dataset has unknown expected_behavior")
 
     # Load generations
     manifest = load_run_manifest(paths.run_manifest_path)
     validate_dataset_against_manifest(dataset_path, manifest)
     gen_rows = read_jsonl(paths.public_raw_path)
     validate_public_run(gen_rows, manifest)
+    if manifest.get("is_full_dataset_run") and len(gen_rows) != len(df_cases):
+        raise ValueError("Full-dataset run does not cover the dataset")
 
     df_gen = pd.DataFrame(gen_rows)
+    collisions = (set(df_gen.columns) & set(df_cases.columns)) - {"case_id"}
+    if collisions:
+        raise ValueError(f"Raw generations contain reserved dataset fields: {sorted(collisions)}")
 
     # Ensure expected generation columns exist
     for c in ["case_id", "answer_text"]:
@@ -123,7 +147,7 @@ def main(dataset_path: str, results_dir: str) -> None:
             raise ValueError(f"Generations missing required field: {c}")
 
     # Merge (supports multiple runs/models per case)
-    df = df_gen.merge(df_cases, on="case_id", how="left", suffixes=("", "_case"))
+    df = df_gen.merge(df_cases, on="case_id", how="left", validate="one_to_one")
 
     # Guardrail: all generations must match a dataset case
     if df["question"].isna().any():
@@ -134,6 +158,14 @@ def main(dataset_path: str, results_dir: str) -> None:
     flagged_rows: List[Dict[str, Any]] = []
 
     for _, row in df.iterrows():
+        expected_prompt = build_clinical_prompt(str(row["question"]), str(row["provided_context"]))
+        if row.get("prompt") != expected_prompt:
+            raise ValueError(f"Prompt does not match dataset/template for {row['case_id']}")
+        expected_key = build_cache_key(str(row["case_id"]), str(row["provider"]), str(row["model_id"]),
+                                       str(row["prompt_version"]), expected_prompt)
+        if row.get("cache_key") != expected_key:
+            raise ValueError(f"cache_key does not match prompt identity for {row['case_id']}")
+        completion = validate_generation_payload(row.to_dict())
         required_cits = normalize_pipe_list(row.get("required_citations", ""))
         forbidden_actions = normalize_pipe_list(row.get("forbidden_actions", ""))
         gold_key_points = normalize_pipe_list(row.get("gold_key_points", ""))
@@ -146,6 +178,7 @@ def main(dataset_path: str, results_dir: str) -> None:
             required_citations=required_cits,
             forbidden_actions=forbidden_actions,
             gold_key_points=gold_key_points,
+            generation_status=completion["generation_status"],
         )
 
         record: Dict[str, Any] = {
@@ -162,6 +195,7 @@ def main(dataset_path: str, results_dir: str) -> None:
             "expected_behavior": expected_behavior,
             "overall_grade": metric.scores.get("overall_grade", ""),
             "failure_tags": "|".join(metric.failure_tags) if metric.failure_tags else "",
+            **completion,
         }
 
         # Add boolean flags
@@ -192,10 +226,12 @@ def main(dataset_path: str, results_dir: str) -> None:
                 }
             )
 
+    acceptance = run_contract()
     df_out = pd.DataFrame(out_rows)
     df_out.to_csv(paths.evaluation_output_path, index=False)
 
     write_jsonl(paths.flagged_output_path, flagged_rows)
+    seal_evaluation(results_dir, acceptance)
 
     print(f"Wrote: {paths.evaluation_output_path}")
     print(f"Wrote: {paths.flagged_output_path}")
