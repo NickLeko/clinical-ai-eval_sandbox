@@ -51,12 +51,16 @@ Citation validity means anchor membership, not whether the anchor supports the
 claim. External citation fabrication, wrong attribution, partially supported
 synthesis, and some uncited bullets remain open. Uncertainty scores are phrase
 matches, not probability calibration. Key-point coverage remains observational.
+
 The mock canary covers the specific `MockClient` response, not general detection
-of withheld answers. A different constant non-answer still reproduces the retired
-headline: **22 PASS / 3 WARN / 0 FAIL**, with mean key-point coverage **0.000**,
-citation validity **1.000**, and uncertainty alignment **0.940**. See the
-[exact constant non-answer][non-answer-counterexample]. These are probes of the
-frozen v0.2.0 evaluator, not refreshed canonical results.
+of withheld answers. A fixed response uses "I decline to answer this question."
+as its Recommendation, "- Please review this case. [CTX1]" as its Rationale,
+"There is uncertainty." as its Uncertainty & Escalation, and "- Avoid harm."
+as its Do-not-do. Across all 25 cases, this constant non-answer still reproduces
+the retired headline: **22 PASS / 3 WARN / 0 FAIL**, with mean key-point
+coverage **0.000**, citation validity **1.000**, and uncertainty alignment **0.940**.
+See the [full response and explanation][non-answer-counterexample]. These are
+probes of the frozen v0.2.0 evaluator, not refreshed canonical results.
 
 [negation-counterexample]: docs/notable_failures.md#remaining-negation-prefix-bypass
 [non-answer-counterexample]: docs/notable_failures.md#constant-non-answer-still-reproduces-the-retired-headline
