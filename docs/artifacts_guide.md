@@ -43,7 +43,7 @@ What it contains:
 Why it matters:
 
 - supports auditability
-- shows exactly what the model saw and returned
+- shows the stored user prompt and returned answer
 - helps reviewers inspect individual outputs in context
 
 What it does not mean:
