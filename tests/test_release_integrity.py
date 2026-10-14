@@ -18,6 +18,7 @@ from src.artifact_integrity import validate_scored_artifacts
 from src.build_reviewer_report import load_report_data
 from src.llm_clients import (OpenAIClient, AnthropicClient, GeminiClient, MockClient,
                              validate_generation_payload)
+from src.metrics import MAX_ANSWER_CHARS
 
 ROOT = Path(__file__).resolve().parents[1]
 DATASET = ROOT / "dataset/clinical_questions.csv"
@@ -166,6 +167,51 @@ class ReleaseIntegrityTests(unittest.TestCase):
         self.assertEqual(first["generation_status"], "incomplete")
         self.assertIn("INCOMPLETE_GENERATION", first["failure_tags"])
         self.assertEqual(first["finish_reason"], "length")
+        load_report_data(str(self.run))
+
+    def test_one_oversized_case_fails_without_changing_remaining_case_scores(self):
+        with (self.run / "evaluation_output.csv").open(newline="") as stream:
+            before = list(csv.DictReader(stream))
+        path = self.run / "raw_generations.jsonl"
+        rows = read_rows(path)
+        oversized_index = 12  # Normal cases before and after the oversized case.
+        for index, row in enumerate(rows):
+            if index == oversized_index:
+                row["answer_text"] = "x" * (MAX_ANSWER_CHARS + 1)
+            row.update(provider="openai", generation_status="complete", finish_reason="stop")
+            row["raw_response"] = {"choices": [{"finish_reason": "stop",
+                                                 "message": {"content": row["answer_text"]}}]}
+            row["cache_key"] = generation.build_cache_key(row["case_id"], "openai", row["model_id"],
+                                                           row["prompt_version"], row["prompt"])
+        write_rows(path, rows)
+        manifest_path = self.run / "run_manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["provider"] = "openai"
+        manifest_path.write_text(json.dumps(manifest))
+        with contextlib.redirect_stdout(io.StringIO()):
+            evaluation.main(str(DATASET), str(self.run))
+            summary.main(10, str(self.run))
+        with (self.run / "evaluation_output.csv").open(newline="") as stream:
+            after = list(csv.DictReader(stream))
+        self.assertEqual(len(after), len(before))
+        metrics = ["format_compliance", "citation_validity", "required_citations",
+                   "uncertainty_alignment", "gold_key_points_coverage", "faithfulness_proxy"]
+        for index, (old, new) in enumerate(zip(before, after)):
+            with self.subTest(case=new["case_id"]):
+                if index == oversized_index:
+                    self.assertEqual(new["overall_grade"], "FAIL")
+                    self.assertEqual(new["failure_tags"], "OVERSIZED_ANSWER")
+                    self.assertTrue(all(new[field] == "" for field in metrics))
+                else:
+                    for field in metrics + ["overall_grade", "failure_tags", "unsafe_recommendation",
+                                             "refusal_failure", "hallucination_suspected"]:
+                        self.assertEqual(new[field], old[field])
+        receipt = validate_scored_artifacts(self.run, require_summary=True)
+        self.assertEqual(receipt["acceptance"]["status"], "PASS")
+        report = (self.run / "summary.md").read_text()
+        expected_mean = sum(float(row["faithfulness_proxy"]) for index, row in enumerate(before)
+                            if index != oversized_index) / (len(before) - 1)
+        self.assertIn(f"- faithfulness_proxy: **{expected_mean:.3f}**", report)
         load_report_data(str(self.run))
 
 

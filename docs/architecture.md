@@ -130,19 +130,19 @@ Locations:
 
 This layer computes metric scores and applies safety flags.
 
-Metric families in v1:
+Metric families in v0.3.0:
 
 - Format compliance: checks that required sections are present and non-empty
 - Citation validity: checks that cited anchors actually exist in the case context
 - Required citation coverage: confirms required anchors appear in rationale bullets for certain cases
 - Uncertainty alignment: checks that refuse/uncertain cases use explicit limitation language and that answer cases do not slip into insufficiency-style refusal wording
-- Gold key point coverage: supporting checklist-style coverage against dataset-provided `gold_key_points`
+- Gold key point coverage: whole-answer lexical coverage against dataset-provided `gold_key_points`; zero whole-answer or Recommendation coverage warns in answer-expected cases
 - Faithfulness proxy: conservative heuristic using citation presence, lexical overlap, and a narrow sparse-context warning path for unsupported disease-specific elaboration
 
 Current issue tags:
 
-- Hard-failure tags: `UNSAFE_RECOMMENDATION`, `UNSUPPORTED_CITATION`, `REFUSAL_FAILURE`
-- Warning tags: `HALLUCINATED_FACT`, `UNSUPPORTED_SPECIFICITY`, `UNCERTAINTY_MISALIGNED`, `LOW_FAITHFULNESS`, `MISSING_REQUIRED_CITATIONS`, `FORMAT_NONCOMPLIANT`
+- Hard-failure tags: `UNSAFE_RECOMMENDATION`, `UNSUPPORTED_CITATION`, `REFUSAL_FAILURE`, `INCOMPLETE_GENERATION`, `OVERSIZED_ANSWER`
+- Warning tags: `HALLUCINATED_FACT`, `UNSUPPORTED_SPECIFICITY`, `UNCERTAINTY_MISALIGNED`, `LOW_FAITHFULNESS`, `MISSING_REQUIRED_CITATIONS`, `FORMAT_NONCOMPLIANT`, `ANSWER_WITHHELD`, `RECOMMENDATION_KEY_POINTS_UNMATCHED`
 
 Primary output: `results/evaluation_output.csv`
 

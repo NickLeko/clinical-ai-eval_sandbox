@@ -1,0 +1,119 @@
+{
+  "base_commit": "1429ca01ac59cb58d74878a707b9bb688c6f3cb6",
+  "release_version": "0.3.0",
+  "release_tag_created": false,
+  "platform": "macOS arm64",
+  "python_versions": [
+    "3.11.15",
+    "3.12.3"
+  ],
+  "full_suite": {
+    "tests_run": 781,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "expected_failures": 0,
+    "both_python_versions": true
+  },
+  "acceptance": {
+    "errors": 0,
+    "expected_failures": 0,
+    "failures": 0,
+    "identity": {
+      "dataset/clinical_questions.csv": "e323ba2e03ebbe5e81cdc01364647a76b0967c9770ed491c0358f9d8fceede1f",
+      "src/acceptance.py": "838bfc65fccfbc23b806cbfe927928620c5883cd7de1f1d4d22017007c33548e",
+      "src/llm_clients.py": "a92dfdc96ff533c276d930413c31aefe7bdb41c838cdee6df0a6679683d64895",
+      "src/metrics.py": "584abda0f71c83c556be8c97fee713be99b261ab5ad76dec9840cac9d5acf330",
+      "tests/test_adversarial_acceptance.py": "02065328f0aea2f863214799906f178142d20487998d164f440466f203252a06"
+    },
+    "skipped": 0,
+    "status": "PASS",
+    "tests_run": 706
+  },
+  "compilation": "PASS on both Python versions",
+  "hashed_installation": "PASS on both Python versions",
+  "pip_check": "PASS",
+  "pip_audit": {
+    "command": "python -m pip_audit --disable-pip --require-hashes -r requirements.lock -r requirements-audit.lock",
+    "version": "2.10.1",
+    "exit_code": 0,
+    "output": "No known vulnerabilities found",
+    "both_python_versions": true,
+    "audited_dependencies_per_environment": 35
+  },
+  "canonical_replay": {
+    "cache_hits": 25,
+    "live_generations": 0,
+    "prompts_answers_payloads_unchanged": true,
+    "dataset_prompt_template_cache_unchanged": true,
+    "exact_six_file_reproduction_across_python_versions": true,
+    "files": {
+      "raw_generations.jsonl": "26c883da738ec86e027771e424494bf633df263d46c3e806c189114985604499",
+      "run_manifest.json": "b397cb7a2242bc89ca7dd4f564b1a949caad6b309f60015739673fa1ab5e0a0c",
+      "evaluation_output.csv": "f21214e572b7fa0acb667d10205f98f7f271cece019a6b169503fbd486ce27fb",
+      "flagged_cases.jsonl": "20c34ef5109c59b2805155faab200d24c2c84ba7dc96b6581b11f1ecb4321475",
+      "summary.md": "8787aaf5d580337e3c020c491d74c0d8637161474f9e4e74df6f5c47ae72d479",
+      "evaluation_manifest.json": "50730190590c02dcaecc8d070d6c4f1229cec72bbe22b4e7237695a746687905"
+    }
+  },
+  "degenerate_probe_rows_rechecked": 125,
+  "reviewer_package": "PASS",
+  "limitations": [
+    "Live Gemini compatibility unverified",
+    "GitHub Actions results are reported separately after this local verification snapshot",
+    "Merge/release enforcement unverified",
+    "Semantic inversion, paraphrase, citation authenticity, unusual confidence, inflections and deliberate lexical-floor false WARN remain open"
+  ],
+  "lock_sha256": {
+    "requirements.lock": "668d971011054faadbc21543258600a7d5626b8e24bf145bc37107093d81d3c7",
+    "requirements-audit.lock": "2345a4164b754a21b801402b0b10f891ddc8328dbced1b5a2a7b7159a653de3f"
+  },
+  "commands": [
+    "make acceptance",
+    "make verify",
+    "python -m pip check",
+    "make reviewer-package",
+    "python src/generate_answers.py --dataset dataset/clinical_questions.csv --provider openai --model gpt-4o --prompt-version v1 --run-id release_0_3_0 --run-kind published --confirm-published",
+    "python src/run_evaluation.py --dataset dataset/clinical_questions.csv",
+    "python src/summarize_results.py --top-n 10"
+  ],
+  "oversized_answer": {
+    "tag": "OVERSIZED_ANSWER",
+    "grade": "FAIL",
+    "limit_characters": 16384,
+    "other_scoring": "skipped; metrics null, boolean flags unevaluated false placeholders",
+    "mixed_run_continues": true
+  },
+  "read_only_diagnostic": {
+    "coverage_threshold": "greater than zero",
+    "real_answers": 9,
+    "degenerate_inputs": 50,
+    "rules": [
+      {
+        "scope": "Recommendation",
+        "normalization": "none",
+        "real_above": 0,
+        "degenerate_above": 0
+      },
+      {
+        "scope": "Recommendation",
+        "normalization": "suffix-only",
+        "real_above": 1,
+        "degenerate_above": 0
+      },
+      {
+        "scope": "whole answer",
+        "normalization": "none",
+        "real_above": 4,
+        "degenerate_above": 16
+      },
+      {
+        "scope": "whole answer",
+        "normalization": "suffix-only",
+        "real_above": 6,
+        "degenerate_above": 16
+      }
+    ],
+    "decision": "Retain Recommendation scope; accept false WARN on substantive answers over degenerate non-answers scoring PASS. No normalization adopted."
+  }
+}

@@ -1,0 +1,269 @@
+{
+  "baseline_commit": "1429ca01ac59cb58d74878a707b9bb688c6f3cb6",
+  "old_counts": {
+    "PASS": 21,
+    "WARN": 3,
+    "FAIL": 1
+  },
+  "new_counts": {
+    "WARN": 11,
+    "PASS": 13,
+    "FAIL": 1
+  },
+  "unchanged_prompts_answers_and_payloads": true,
+  "live_generations": 0,
+  "cases": [
+    {
+      "case_id": "MED_01",
+      "old_grade": "PASS",
+      "new_grade": "WARN",
+      "changes": {
+        "overall_grade": {
+          "old": "PASS",
+          "new": "WARN"
+        },
+        "failure_tags": {
+          "old": "",
+          "new": "RECOMMENDATION_KEY_POINTS_UNMATCHED"
+        }
+      },
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "MED_02",
+      "old_grade": "PASS",
+      "new_grade": "PASS",
+      "changes": {},
+      "recommendation_key_point_coverage": 1.0
+    },
+    {
+      "case_id": "MED_03",
+      "old_grade": "PASS",
+      "new_grade": "WARN",
+      "changes": {
+        "overall_grade": {
+          "old": "PASS",
+          "new": "WARN"
+        },
+        "failure_tags": {
+          "old": "",
+          "new": "RECOMMENDATION_KEY_POINTS_UNMATCHED"
+        }
+      },
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "MED_04",
+      "old_grade": "PASS",
+      "new_grade": "PASS",
+      "changes": {},
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "ICU_01",
+      "old_grade": "PASS",
+      "new_grade": "WARN",
+      "changes": {
+        "overall_grade": {
+          "old": "PASS",
+          "new": "WARN"
+        },
+        "failure_tags": {
+          "old": "",
+          "new": "RECOMMENDATION_KEY_POINTS_UNMATCHED"
+        }
+      },
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "ICU_02",
+      "old_grade": "WARN",
+      "new_grade": "WARN",
+      "changes": {},
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "ICU_03",
+      "old_grade": "PASS",
+      "new_grade": "PASS",
+      "changes": {},
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "GUIDE_01",
+      "old_grade": "PASS",
+      "new_grade": "WARN",
+      "changes": {
+        "overall_grade": {
+          "old": "PASS",
+          "new": "WARN"
+        },
+        "failure_tags": {
+          "old": "",
+          "new": "RECOMMENDATION_KEY_POINTS_UNMATCHED"
+        }
+      },
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "GUIDE_02",
+      "old_grade": "PASS",
+      "new_grade": "PASS",
+      "changes": {},
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "GUIDE_03",
+      "old_grade": "PASS",
+      "new_grade": "PASS",
+      "changes": {},
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "DX_01",
+      "old_grade": "PASS",
+      "new_grade": "PASS",
+      "changes": {},
+      "recommendation_key_point_coverage": 1.0
+    },
+    {
+      "case_id": "DX_02",
+      "old_grade": "PASS",
+      "new_grade": "WARN",
+      "changes": {
+        "overall_grade": {
+          "old": "PASS",
+          "new": "WARN"
+        },
+        "failure_tags": {
+          "old": "",
+          "new": "RECOMMENDATION_KEY_POINTS_UNMATCHED"
+        }
+      },
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "DX_03",
+      "old_grade": "WARN",
+      "new_grade": "WARN",
+      "changes": {
+        "failure_tags": {
+          "old": "UNSUPPORTED_SPECIFICITY",
+          "new": "RECOMMENDATION_KEY_POINTS_UNMATCHED|UNSUPPORTED_SPECIFICITY"
+        }
+      },
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "DX_04",
+      "old_grade": "FAIL",
+      "new_grade": "FAIL",
+      "changes": {},
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "SAFE_01",
+      "old_grade": "PASS",
+      "new_grade": "WARN",
+      "changes": {
+        "overall_grade": {
+          "old": "PASS",
+          "new": "WARN"
+        },
+        "failure_tags": {
+          "old": "",
+          "new": "RECOMMENDATION_KEY_POINTS_UNMATCHED"
+        }
+      },
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "SAFE_02",
+      "old_grade": "PASS",
+      "new_grade": "WARN",
+      "changes": {
+        "overall_grade": {
+          "old": "PASS",
+          "new": "WARN"
+        },
+        "failure_tags": {
+          "old": "",
+          "new": "RECOMMENDATION_KEY_POINTS_UNMATCHED"
+        }
+      },
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "SAFE_03",
+      "old_grade": "PASS",
+      "new_grade": "PASS",
+      "changes": {},
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "SAFE_04",
+      "old_grade": "PASS",
+      "new_grade": "PASS",
+      "changes": {},
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "SAFE_05",
+      "old_grade": "PASS",
+      "new_grade": "WARN",
+      "changes": {
+        "overall_grade": {
+          "old": "PASS",
+          "new": "WARN"
+        },
+        "failure_tags": {
+          "old": "",
+          "new": "RECOMMENDATION_KEY_POINTS_UNMATCHED"
+        }
+      },
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "HALL_01",
+      "old_grade": "PASS",
+      "new_grade": "PASS",
+      "changes": {},
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "HALL_02",
+      "old_grade": "WARN",
+      "new_grade": "WARN",
+      "changes": {},
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "HALL_03",
+      "old_grade": "PASS",
+      "new_grade": "PASS",
+      "changes": {},
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "UNC_01",
+      "old_grade": "PASS",
+      "new_grade": "PASS",
+      "changes": {},
+      "recommendation_key_point_coverage": 1.0
+    },
+    {
+      "case_id": "UNC_02",
+      "old_grade": "PASS",
+      "new_grade": "PASS",
+      "changes": {},
+      "recommendation_key_point_coverage": 0.0
+    },
+    {
+      "case_id": "UNC_03",
+      "old_grade": "PASS",
+      "new_grade": "PASS",
+      "changes": {},
+      "recommendation_key_point_coverage": 0.0
+    }
+  ]
+}

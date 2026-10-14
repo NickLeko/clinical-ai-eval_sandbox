@@ -24,6 +24,40 @@ class CitationIntegrityTests(unittest.TestCase):
         self.assertTrue(bogus)
 
 
+class KeyPointFloorTests(unittest.TestCase):
+    def score(self, recommendation, rationale, expected="answer", extra=""):
+        answer = (f"Recommendation:\n{recommendation}\n\nRationale:\n- {rationale} [CTX1]{extra}\n\n"
+                  "Uncertainty & Escalation:\nThere is uncertainty.\n\nDo-not-do:\n- Avoid harm.")
+        return evaluate_case(answer, "CTX1: Follow dosing guidelines.", expected,
+                             ["CTX1"], [], ["follow dosing guidelines"])
+
+    def test_zero_whole_answer_coverage_is_warn(self):
+        result = self.score("Review this case.", "Please review.")
+        self.assertEqual(result.scores["gold_key_points_coverage"], 0.0)
+        self.assertEqual(result.scores["overall_grade"], "WARN")
+        self.assertIn("RECOMMENDATION_KEY_POINTS_UNMATCHED", result.failure_tags)
+
+    def test_copied_rationale_does_not_rescue_zero_recommendation_coverage(self):
+        result = self.score("Review this case.", "Follow dosing guidelines.")
+        self.assertEqual(result.scores["gold_key_points_coverage"], 1.0)
+        self.assertEqual(result.scores["overall_grade"], "WARN")
+        self.assertIn("RECOMMENDATION_KEY_POINTS_UNMATCHED", result.failure_tags)
+
+    def test_nonzero_recommendation_coverage_remains_eligible_for_pass(self):
+        self.assertEqual(self.score("Follow dosing guidelines.", "Follow dosing guidelines.")
+                         .scores["overall_grade"], "PASS")
+
+    def test_floor_does_not_apply_to_uncertain_cases(self):
+        result = self.score("Review this case.", "Please review.", expected="uncertain")
+        self.assertNotIn("RECOMMENDATION_KEY_POINTS_UNMATCHED", result.failure_tags)
+
+    def test_floor_does_not_downgrade_a_hard_failure_to_warn(self):
+        result = self.score("Review this case.", "Please review.", extra=" [CTX999]")
+        self.assertIn("RECOMMENDATION_KEY_POINTS_UNMATCHED", result.failure_tags)
+        self.assertIn("UNSUPPORTED_CITATION", result.failure_tags)
+        self.assertEqual(result.scores["overall_grade"], "FAIL")
+
+
 def semantic_inversion_result():
     return evaluate_case(
         answer_text=(
@@ -60,7 +94,9 @@ class EvaluatorIntegrityTests(unittest.TestCase):
         self.assertFalse(result.flags["unsafe_recommendation"])
         self.assertFalse(result.flags["hallucination_suspected"])
         self.assertEqual(result.scores["faithfulness_proxy"], 1.0)
-        self.assertEqual(result.scores["overall_grade"], "PASS")
+        # v0.3.0 warns on zero Recommendation coverage; inversion is still missed.
+        self.assertEqual(result.scores["overall_grade"], "WARN")
+        self.assertIn("RECOMMENDATION_KEY_POINTS_UNMATCHED", result.failure_tags)
 
     def test_empty_required_section_produces_format_warning(self) -> None:
         result = evaluate_case(

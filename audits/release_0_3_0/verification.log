@@ -1,0 +1,18 @@
+Python 3.12.3
+
+----------------------------------------------------------------------
+Ran 781 tests in 4.424s
+
+OK
+python -m py_compile src/*.py tests/*.py
+
+Python 3.11.15
+
+----------------------------------------------------------------------
+Ran 781 tests in 4.094s
+
+OK
+python -m py_compile src/*.py tests/*.py
+
+Dependency audit (both environments): No known vulnerabilities found (exit 0)
+Canonical replay: exact six-file equality across Python versions; zero live calls
