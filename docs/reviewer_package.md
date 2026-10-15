@@ -113,7 +113,7 @@ The review-first list is a convenience ordering only. It uses existing fields:
 
 This ordering is not a new score, not a severity label, and not benchmark logic. It exists only to help a human reviewer decide where to start reading.
 
-`gold_key_points_coverage` is a supporting checklist-style metric and is not grade-driving by itself. The JSON summary preserves raw source field names for auditability and adds display labels or interpretation notes where applicable; those labels are derived reviewer guidance, not scoring rules.
+`gold_key_points_coverage` retains whole-answer lexical coverage. In v0.3.0, zero whole-answer or Recommendation coverage warns in answer-expected cases; nonzero coverage does not establish correctness. The JSON summary preserves raw source field names for auditability and adds display labels or interpretation notes where applicable; those labels are derived reviewer guidance, not scoring rules.
 
 ## Boundary Notes
 

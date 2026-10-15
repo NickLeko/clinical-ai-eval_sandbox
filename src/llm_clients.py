@@ -32,11 +32,8 @@ class BaseLLMClient:
         raise NotImplementedError
 
     def _http_error_message(self, response: requests.Response) -> str:
-        try:
-            details = response.json()
-        except ValueError:
-            details = response.text[:500]
-        return f"{self.provider_name} API request failed with status {response.status_code}: {details}"
+        # Provider bodies may echo credentials or request headers. Do not log them.
+        return f"{self.provider_name} API request failed with status {response.status_code}"
 
     def _post_json(
         self,
@@ -45,7 +42,7 @@ class BaseLLMClient:
         headers: Dict[str, str],
         payload: Dict[str, Any],
     ) -> Dict[str, Any]:
-        last_error: Exception | None = None
+        last_error_type = "unknown error"
         for attempt in range(1, self.max_retries + 1):
             try:
                 response = requests.post(
@@ -58,14 +55,15 @@ class BaseLLMClient:
                     raise LLMGenerationError(self._http_error_message(response))
                 return response.json()
             except (requests.RequestException, LLMGenerationError, ValueError) as exc:
-                last_error = exc
+                # Request exceptions can contain URLs, headers, or response bodies.
+                last_error_type = type(exc).__name__
                 if attempt == self.max_retries:
                     break
                 time.sleep(self.retry_backoff_s * (2 ** (attempt - 1)))
 
         raise LLMGenerationError(
-            f"{self.provider_name} generation failed after {self.max_retries} attempts: {last_error}"
-        )
+            f"{self.provider_name} generation failed after {self.max_retries} attempts: {last_error_type}"
+        ) from None
 
 
 class OpenAIClient(BaseLLMClient):
@@ -101,11 +99,11 @@ class OpenAIClient(BaseLLMClient):
             answer_text = data["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError) as exc:
             raise LLMGenerationError(
-                f"OpenAI response was missing the assistant message content for model '{self.model}'."
+                "OpenAI response was missing the assistant message content."
             ) from exc
 
         if not isinstance(answer_text, str) or not answer_text.strip():
-            raise LLMGenerationError(f"OpenAI returned an empty assistant message for model '{self.model}'.")
+            raise LLMGenerationError("OpenAI returned an empty assistant message.")
 
         return answer_text
 
@@ -166,16 +164,16 @@ class AnthropicClient(BaseLLMClient):
             content = data["content"]
         except KeyError as exc:
             raise LLMGenerationError(
-                f"Anthropic response was missing the content list for model '{self.model}'."
+                "Anthropic response was missing the content list."
             ) from exc
 
         if not isinstance(content, list):
-            raise LLMGenerationError(f"Anthropic returned a non-list content payload for model '{self.model}'.")
+            raise LLMGenerationError("Anthropic returned a non-list content payload.")
 
         text_blocks = [block.get("text", "") for block in content if isinstance(block, dict) and block.get("type") == "text"]
         answer_text = "".join(text_blocks).strip()
         if not answer_text:
-            raise LLMGenerationError(f"Anthropic returned an empty assistant message for model '{self.model}'.")
+            raise LLMGenerationError("Anthropic returned an empty assistant message.")
         return answer_text
 
     def generate(self, prompt: str) -> Dict[str, Any]:
@@ -209,7 +207,7 @@ class GeminiClient(BaseLLMClient):
 
     def __init__(
         self,
-        model: str = "gemini-1.5-pro",
+        model: str = "gemini-3.8-flash",
         timeout_s: float = 60.0,
         max_retries: int = 3,
         retry_backoff_s: float = 1.0,
@@ -224,10 +222,7 @@ class GeminiClient(BaseLLMClient):
             raise ValueError("GEMINI_API_KEY or GOOGLE_API_KEY environment variable not set")
 
         self.model = model
-        self.endpoint = (
-            f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
-            f"?key={self.api_key}"
-        )
+        self.endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
         self.provider_name = "Gemini"
 
     def _extract_answer_text(self, data: Dict[str, Any]) -> str:
@@ -235,11 +230,11 @@ class GeminiClient(BaseLLMClient):
             parts = data["candidates"][0]["content"]["parts"]
         except (KeyError, IndexError, TypeError) as exc:
             raise LLMGenerationError(
-                f"Gemini response was missing text parts for model '{self.model}'."
+                "Gemini response was missing text parts."
             ) from exc
 
         if not isinstance(parts, list):
-            raise LLMGenerationError(f"Gemini returned a non-list parts payload for model '{self.model}'.")
+            raise LLMGenerationError("Gemini returned a non-list parts payload.")
 
         answer_text = "".join(
             part.get("text", "")
@@ -247,11 +242,12 @@ class GeminiClient(BaseLLMClient):
             if isinstance(part, dict) and isinstance(part.get("text", ""), str)
         ).strip()
         if not answer_text:
-            raise LLMGenerationError(f"Gemini returned an empty assistant message for model '{self.model}'.")
+            raise LLMGenerationError("Gemini returned an empty assistant message.")
         return answer_text
 
     def generate(self, prompt: str) -> Dict[str, Any]:
         headers = {
+            "x-goog-api-key": self.api_key,
             "Content-Type": "application/json",
         }
         payload = {

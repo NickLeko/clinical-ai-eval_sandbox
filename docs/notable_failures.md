@@ -1,6 +1,6 @@
 # Notable Failure Cases
 
-This document highlights representative failure cases identified during evaluation.
+The frozen v0.2.0 probes below are historical evidence, superseded by the [v0.3.0 re-score and responder table](releases/0.3.0.md). Their numeric results are not current score claims. v0.3.0 adds a lexical coverage floor; semantic inversion and unusual negation remain open.
 
 These examples are illustrative, not exhaustive. The goal is to show how the evaluation framework can surface systematic risks in LLM behavior within clinical decision-support scenarios.
 
@@ -123,7 +123,7 @@ Plain-language explanation:
 
 The context says NSAIDs are contraindicated and should be avoided in CKD stage 4 because of renal risk. The answer recommends NSAIDs as safe and effective for the same patient, but it repeats the same tokens: `CKD stage 4`, `NSAIDs`, `renal toxicity risk`, `renal risk`, `pain management`, and valid `CTX` citations. The faithfulness proxy rewards citation presence and token overlap, while the unsafe recommendation detector only looks for configured forbidden action substrings outside the recognized clause-local prohibitions/rejections. Because the answer recommends NSAIDs without the exact configured action phrases, the current evaluator gives a high faithfulness score and misses the semantic inversion.
 
-## Current Release Interpretation
+## Historical v0.2.0 Interpretation
 
 The prior zero-failure headline is retired; it was a property of the old gates. The full historical audit is preserved in `audits/adversarial_2026_09_04/REPORT.md`. Its reproducer intentionally asserts the old defects and is only for the audited revision, not the current release.
 

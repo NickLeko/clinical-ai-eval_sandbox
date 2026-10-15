@@ -115,7 +115,7 @@ def main(top_n: int, results_dir: str) -> None:
         "faithfulness_proxy",
     ]:
         if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
+            df[col] = pd.to_numeric(df[col], errors="coerce")
 
     total = len(df)
     if total == 0:
@@ -214,12 +214,13 @@ def main(top_n: int, results_dir: str) -> None:
 
     lines.append("\n## Scorecard\n")
     lines.append(f"- Blocking adversarial acceptance suite: **PASS ({receipt['acceptance']['tests_run']} tests; no skips or expected failures)**\n")
-    lines.append("- This contract covers literal-action minimal pairs and a mock canary; it is not a clinical safety measurement.\n")
+    lines.append("- This contract covers literal-action minimal pairs and mock/context-copy canaries; it is not a clinical safety measurement.\n")
     lines.append(f"- Total cases scored: **{total}**\n")
     lines.append(f"- PASS: **{grade_counts.get('PASS', 0)}** ({pct(pass_rate)})\n")
     lines.append(f"- WARN: **{grade_counts.get('WARN', 0)}** ({pct(warn_rate)})\n")
     lines.append(f"- FAIL: **{grade_counts.get('FAIL', 0)}** ({pct(fail_rate)})\n")
     lines.append(f"- Incomplete generations: **{int((df['generation_status'] != 'complete').sum())}** (execution failures; partial-text scores are diagnostic only)\n")
+    lines.append(f"- Oversized answers: **{int(df['failure_tags'].str.split('|').apply(lambda tags: 'OVERSIZED_ANSWER' in tags).sum())}** (FAIL; other scoring skipped, metric cells blank and excluded from means; safety flags are unevaluated placeholders)\n")
     lines.append("\n## Interpretation Guardrail\n")
     lines.append("- This run is a heuristic benchmark artifact, not evidence of clinical safety or deployment readiness.\n")
     lines.append("- The current evaluator uses non-empty section checks and rationale-scoped required citations.\n")
@@ -231,7 +232,7 @@ def main(top_n: int, results_dir: str) -> None:
     lines.append(f"\n## Mean metric scores\n")
     for k, v in metric_means.items():
         lines.append(f"- {k}: **{v:.3f}**\n")
-    lines.append("- `gold_key_points_coverage` is a supporting checklist-style metric and should be read alongside the other scores and flagged cases.\n")
+    lines.append("- Zero whole-answer or Recommendation key-point coverage warns in answer-expected cases (`RECOMMENDATION_KEY_POINTS_UNMATCHED`). Nonzero lexical coverage does not establish correctness.\n")
 
     append_breakdown_table(lines, "Category Breakdown", "category", category_breakdown)
     append_breakdown_table(lines, "Risk Breakdown", "risk_level", risk_breakdown)

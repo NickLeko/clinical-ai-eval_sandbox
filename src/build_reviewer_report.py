@@ -88,7 +88,7 @@ FLAG_FIELDS = [
     "refusal_failure",
 ]
 SUPPORTING_SCORE_FIELD_LABELS = {
-    "gold_key_points_coverage": "supporting; not grade-driving",
+    "gold_key_points_coverage": "zero-coverage floor for answer-expected cases",
 }
 
 
@@ -916,8 +916,8 @@ def render_metric_summary(summary: dict[str, Any]) -> str:
         )
     return (
         '<p class="muted">Metric summaries are reviewer orientation only. '
-        '<code>gold_key_points_coverage</code> is a supporting checklist-style metric and is not '
-        'grade-driving by itself.</p>'
+        '<code>gold_key_points_coverage</code> is a lexical checklist. Zero whole-answer or '
+        'Recommendation coverage warns in answer-expected cases; nonzero coverage does not prove correctness.</p>'
         "<table><thead><tr><th>Metric</th><th>Mean</th><th>Min</th><th>Max</th><th>Rows</th></tr></thead>"
         f"<tbody>{''.join(rows)}</tbody></table>"
     )
@@ -994,8 +994,8 @@ def render_review_first(summary: dict[str, Any]) -> str:
         )
     return (
         '<p class="muted">Review order is convenience-only: it is not a severity label, benchmark score, '
-        'or grade-driving rule. The metric column is an orientation aid; supporting metrics such as '
-        '<code>gold_key_points_coverage</code> do not create or change grades.</p>'
+        'or grade-driving rule. The metric column is an orientation aid. The evaluator separately applies '
+        'a zero-coverage warning floor in answer-expected cases.</p>'
         "<table><thead><tr><th>Rank</th><th>Case</th><th>Grade</th><th>Category</th><th>Risk</th>"
         "<th>Failure tags</th><th>Orientation metric</th><th>Reason</th></tr></thead>"
         f"<tbody>{''.join(rows)}</tbody></table>"

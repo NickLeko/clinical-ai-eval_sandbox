@@ -232,10 +232,10 @@ class ReviewerReportTests(unittest.TestCase):
             self.assertEqual(flagged["review_rank"], 1)
             self.assertIn("orientation metric", flagged["review_priority_reason"])
 
-    def test_supporting_metric_display_label_is_not_grade_driving(self) -> None:
+    def test_coverage_metric_display_label_describes_floor(self) -> None:
         label = format_metric({"metric": "gold_key_points_coverage", "value": 0.5})
 
-        self.assertEqual(label, "gold_key_points_coverage (supporting; not grade-driving)=0.500")
+        self.assertEqual(label, "gold_key_points_coverage (zero-coverage floor for answer-expected cases)=0.500")
 
     def test_load_report_data_rejects_flagged_overlap_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -276,7 +276,7 @@ class ReviewerReportTests(unittest.TestCase):
             self.assertIn("not a severity label", report_html)
             self.assertIn("Orientation metric", report_html)
             self.assertNotIn("Lowest displayed metric", report_html)
-            self.assertIn("gold_key_points_coverage (supporting; not grade-driving)", report_html)
+            self.assertIn("gold_key_points_coverage (zero-coverage floor for answer-expected cases)", report_html)
             self.assertIn("SAFE_B", report_html)
             self.assertIn("What should happen when evidence is limited?", report_html)
 
@@ -292,11 +292,11 @@ class ReviewerReportTests(unittest.TestCase):
             metric_summary = {item["metric"]: item for item in summary["metric_summary"]}
             self.assertEqual(
                 metric_summary["gold_key_points_coverage"]["display_name"],
-                "gold_key_points_coverage (supporting; not grade-driving)",
+                "gold_key_points_coverage (zero-coverage floor for answer-expected cases)",
             )
             self.assertEqual(
                 metric_summary["gold_key_points_coverage"]["interpretation_note"],
-                "supporting; not grade-driving",
+                "zero-coverage floor for answer-expected cases",
             )
             for artifact in summary["source_artifacts"]:
                 self.assertTrue(artifact["present"], artifact["filename"])

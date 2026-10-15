@@ -230,7 +230,7 @@ class OfflinePipelineTests(unittest.TestCase):
         ):
             self.assertIsInstance(select_client("openai", "gpt-4o"), OpenAIClient)
             self.assertIsInstance(select_client("anthropic", "claude-3-5-sonnet-latest"), AnthropicClient)
-            self.assertIsInstance(select_client("gemini", "gemini-1.5-pro"), GeminiClient)
+            self.assertIsInstance(select_client("gemini", "gemini-3.8-flash"), GeminiClient)
             self.assertIsInstance(select_client("mock", "mock-clinical-model"), MockClient)
 
     def test_select_client_rejects_unknown_provider(self) -> None:
